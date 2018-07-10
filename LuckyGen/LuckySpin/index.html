@@ -1,0 +1,127 @@
+<html>
+    <head>
+        <title>Vòng quay may mắn</title>
+        <link rel="stylesheet" href="css/lucky-spin.css" type="text/css" />
+    </head>
+    <body>
+        <div align="center">
+            <table cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                    <td>
+                        <div class="power_controls">
+                            <img id="spin_button" src="image/spin_on.png" class="clickable" alt="spin" onClick="startSpin(15);" />
+                            <br /><br />
+                            &nbsp;&nbsp;<a href="#" onClick="resetWheel(); return false;">Lại lần nữa</a><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(reset)
+                        </div>
+                    </td>
+                    <td width="438" height="582" class="the_wheel" align="center" valign="center">
+                        <canvas id="canvas" width="434" height="434">
+                            <p style="{color: white}" align="center">Sorry, your browser doesn't support canvas. Please try another.</p>
+                        </canvas>
+                    </td>
+                </tr>
+            </table>
+        </div>
+		<script type="text/javascript" src="js/Winwheel.js"></script>
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/gsap/latest/TweenMax.min.js"></script>
+        <script>
+            var theWheel = new Winwheel({
+                'numSegments'  : 32,     
+                'outerRadius'  : 212,   
+                'textFontSize' : 28,    
+                'segments'     :        
+                [
+                   {'fillStyle' : '#ff0000', 'text' : 'Prize 1'},
+                   {'fillStyle' : '#0000ff', 'text' : 'Prize 2'},
+                   {'fillStyle' : '#33ff77', 'text' : 'Prize 3'},
+                   {'fillStyle' : '#808080', 'text' : 'Prize 4'},
+				   {'fillStyle' : '#ff33ff', 'text' : 'Prize 5'},
+                   {'fillStyle' : '#9999ff', 'text' : 'Prize 6'},
+                   {'fillStyle' : '#009966', 'text' : 'Prize 7'},
+                   {'fillStyle' : '#77773c', 'text' : 'Prize 8'},
+				   {'fillStyle' : '#ff0000', 'text' : 'Prize 9'},
+                   {'fillStyle' : '#0000ff', 'text' : 'Prize 10'},
+                   {'fillStyle' : '#33ff77', 'text' : 'Prize 11'},
+                   {'fillStyle' : '#808080', 'text' : 'Prize 12'},
+				   {'fillStyle' : '#ff33ff', 'text' : 'Prize 13'},
+                   {'fillStyle' : '#9999ff', 'text' : 'Prize 14'},
+                   {'fillStyle' : '#009966', 'text' : 'Prize 15'},
+                   {'fillStyle' : '#77773c', 'text' : 'Prize 16'},
+				   {'fillStyle' : '#ff0000', 'text' : 'Prize 17'},
+                   {'fillStyle' : '#0000ff', 'text' : 'Prize 18'},
+                   {'fillStyle' : '#33ff77', 'text' : 'Prize 19'},
+                   {'fillStyle' : '#808080', 'text' : 'Prize 20'},
+				   {'fillStyle' : '#ff33ff', 'text' : 'Prize 21'},
+                   {'fillStyle' : '#9999ff', 'text' : 'Prize 22'},
+                   {'fillStyle' : '#009966', 'text' : 'Prize 23'},
+                   {'fillStyle' : '#77773c', 'text' : 'Prize 24'},
+				   {'fillStyle' : '#ff0000', 'text' : 'Prize 25'},
+                   {'fillStyle' : '#0000ff', 'text' : 'Prize 26'},
+                   {'fillStyle' : '#33ff77', 'text' : 'Prize 27'},
+                   {'fillStyle' : '#808080', 'text' : 'Prize 28'},
+				   {'fillStyle' : '#ff33ff', 'text' : 'Prize 29'},
+                   {'fillStyle' : '#9999ff', 'text' : 'Prize 30'},
+                   {'fillStyle' : '#009966', 'text' : 'Prize 31'},
+                   {'fillStyle' : '#77773c', 'text' : 'Prize 32'}
+                ],
+                'animation' :           
+                {
+                    'type'     : 'spinToStop',
+                    'duration' : 5,     
+                    'spins'    : 8,
+                    'callbackFinished' : alertPrize
+                }
+            });
+			
+			function updateSpin(numSegments, prizes) {
+				theWheel.numSegments = numSegments;
+				while(theWheel.segments.length > theWheel.numSegments + 1) {
+					theWheel.segments.pop();
+				}
+				console.log(theWheel.numSegments);
+				console.log(theWheel.segments.length);
+				console.log(theWheel.segments);
+				for(var i = 1; i < theWheel.numSegments; i++) {
+					theWheel.segments[i].text = prizes[i - 1];
+				}
+				
+				theWheel.updateSegmentSizes();
+				theWheel.draw();
+			}
+			//updateSpin(5, ["test 1", "test 2", "test 3", "test 4", "test 5"]);
+
+            var wheelSpinning = false;
+			
+            function startSpin(prize)
+            {
+				console.log(prize);
+				var stopAt = ((360 / theWheel.numSegments) * (prize - 1)) + 1 + Math.floor((Math.random() *  ((360 / theWheel.numSegments) - 2)  ));
+				theWheel.animation.stopAngle = stopAt;
+                if (wheelSpinning == false)
+                {
+                    document.getElementById('spin_button').src       = "image/spin_off.png";
+                    document.getElementById('spin_button').className = "";
+
+                    theWheel.startAnimation();
+                    wheelSpinning = true;
+                }
+            }
+
+            function resetWheel()
+            {
+                theWheel.stopAnimation(false);  
+                theWheel.rotationAngle = 0;     
+                theWheel.draw();                
+
+                wheelSpinning = false;          
+				document.getElementById('spin_button').src       = "image/spin_on.png";
+				document.getElementById('spin_button').className = "clickable";
+            }
+
+            function alertPrize(indicatedSegment)
+            {
+                alert("You have won " + indicatedSegment.text);
+            }
+        </script>
+    </body>
+</html>
