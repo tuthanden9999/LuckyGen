@@ -31,10 +31,6 @@ class Business {
             this.gameIdList = [];
         }
     }
-
-    public toString() {
-        return JSON.stringify(this);
-    }
 }
 
 class Game {
@@ -49,7 +45,7 @@ class Game {
         if(text) {
             let gameObj = JSON.parse(text);
             this.gameId = gameObj.gameId;
-            this.correctAnswerList = gameObj.correctList;
+            this.correctAnswerList = gameObj.correctAnswerList;
             this.playerList = gameObj.playerList;
             this.numberOfCorrectPlayer = 0;
             for(var i = 0; i < this.playerList.length; i++) {
@@ -67,10 +63,6 @@ class Game {
             this.isFinished = false;
             this.theWinnerId = -1;
         }
-    }
-
-    public toString() {
-        return JSON.stringify(this);
     }
 }
 
@@ -96,10 +88,6 @@ class Player {
             this.numberGuess = 0;
         }
     }
-
-    public toString() {
-        return JSON.stringify(this);
-    }
 }
 
 class BLuckyCounter {
@@ -116,6 +104,7 @@ class BLuckyCounter {
     addNewBusiness(businessText) {
         var newBusiness = new Business(businessText);
         this.businessMap.put(newBusiness.businessId, newBusiness);
+        return "addNewBusiness success";
     }
 
     addNewGameToBusiness(businessId, gameText) {
@@ -123,30 +112,26 @@ class BLuckyCounter {
         var newGame = new Game(gameText);
         this.gameMap.put(newGame.gameId, newGame);
         currentBusiness.gameIdList.push(newGame.gameId);
-    }
-
-    _indexOfPlayer(playerList, player) {
-        for(var i = 0; i < playerList.length; i++) {
-            if(playerList[i].playerId = player.playerId) {
-                return i;
-            }
-        }
-        return -1;
+        return "addNewGameToBusiness success";
     }
 
     addNewPlayerToGame(gameId, playerText) {
         var tmpPlayer = new Player(playerText);
         var currentGame = this.gameMap.get(gameId);
-        var indexOfTmpPlayer = this._indexOfPlayer(currentGame.playerList, tmpPlayer);
-        if(indexOfTmpPlayer > -1) {
-            currentGame.playerList.push(tmpPlayer);
-            if(Util.isSameArray(currentGame.correctList, tmpPlayer.answerList)) {
-                currentGame.numberOfCorrectPlayer = currentGame.numberOfCorrectPlayer + 1;
-                this.gameMap[currentGame.gameId] = currentGame;
-            }
-        } else {
-            return;
+        if(currentGame.isFinished) {
+            return "Game is finished.";
         }
+
+        var isExistPlayer = currentGame.playerList.includes(tmpPlayer)
+        if(!isExistPlayer) {
+            currentGame.playerList.push(tmpPlayer);
+        } else {
+        }
+        if(Util.isSameArray(currentGame.correctAnswerList, tmpPlayer.answerList)) {
+            currentGame.numberOfCorrectPlayer = currentGame.numberOfCorrectPlayer + 1;
+        }
+        this.gameMap.put(currentGame.gameId, currentGame);
+        return "addNewPlayerToGame success";
     }
 
     getWinnerResultByGameId(gameId) {
@@ -159,40 +144,92 @@ class BLuckyCounter {
             }
         } else {
             for(var i = 0; i < currentGame.playerList.length; i++) {
-                if(Util.isSameArray(currentGame.correctAnswerList, currentGame.playerList[i].answerList)) {
-                    if(currentGame.playerList[i].numberGuess == currentGame.numberOfCorrectPlayer) {
-                        currentGame.theWinnerId = currentGame.playerList[i].playerId;
-                        this.gameMap[currentGame.gameId] = currentGame;
-                        return currentGame.playerList[i].toString();
+                var tmpPlayer = currentGame.playerList[i];
+                if(Util.isSameArray(currentGame.correctAnswerList, tmpPlayer.answerList)) {
+                    if(tmpPlayer.numberGuess == currentGame.numberOfCorrectPlayer) {
+                        currentGame.theWinnerId = tmpPlayer.playerId;
+                        this.gameMap.put(currentGame.gameId, currentGame);
+                        return JSON.stringify(tmpPlayer);
                     }
                 }
             }
         }
+        return JSON.stringify(new Player());
     }
 
     getGameResultByGameId(gameId) {
         var currentGame = this.gameMap.get(gameId);
-        return currentGame.toString(); 
+        return JSON.stringify(currentGame); 
     }
 
     getGameHistoryByBusinessId(businessId) {
         var currentBusiness = this.businessMap.get(businessId);
-        return currentBusiness.toString();
+        return JSON.stringify(currentBusiness);
     }
 
     stopGame(businessId, gameId) {
         var currentGame = this.gameMap.get(gameId);
         if(currentGame.isFinished) {
-            return;
+            return "stopGame is stopped";
         }
         var currentBusiness = this.businessMap.get(businessId);
         for(var i = 0; i < currentBusiness.gameIdList.length; i++) {
             if(currentBusiness.gameIdList[i] == gameId) {
                 this.getGameResultByGameId(gameId);
                 currentGame.isFinished = true;
-                this.gameMap[currentGame.gameId] = currentGame;
-                return;
+                this.gameMap.put(currentGame.gameId, currentGame);
+                return "stopGame success";
             }
         }
+        return "stopGame fail";
     }
+
+    _createPlayerText(playerId, playerName, playerAddress, answerList, numberGuess) {
+        var player = {}
+        player.playerId = playerId;
+        player.playerName = playerName;
+        player.playerAddress = playerAddress;
+        player.answerList = answerList;
+        player.numberGuess = numberGuess;
+        return JSON.stringify(player);
+    }
+
+    // testAll() {
+    //     var result = "";
+    //     var businessText = {};
+    //     businessText.businessId = 1;
+    //     businessText.gameIdList = [1, 2, 3];
+    //     result = result + " "+ this.addNewBusiness(JSON.stringify(businessText));
+    //     result = result + "                                                                                              ";
+    //     var gameText = {};
+    //     gameText.gameId = 1;
+    //     gameText.correctAnswerList = ["A", "C"];
+    //     gameText.playerList = [];
+    //     gameText.numberOfCorrectPlayer = 0;
+    //     gameText.isFinished = false;
+    //     gameText.theWinnerId = -1;
+    //     result = result + " " + this.addNewGameToBusiness(1, JSON.stringify(gameText));
+    //     result = result + "                                                                                              ";
+    //     var playerText1 = this._createPlayerText(1, "anhnhoday19915", "n1JPesSsumXpnagcTdwBXUHNsa5GofeM4Ud", ["B","C"], 1);
+    //     result = result + " " + this.addNewPlayerToGame(1, playerText1);
+    //     var playerText2 = this._createPlayerText(2, "anhnhoday19916", "n1bNsEaLp7wWRUNq81juZPJU7M6FNEUzhT4", ["A","A"], 2);
+    //     result = result + " " + this.addNewPlayerToGame(1, playerText2);
+    //     var playerText3 = this._createPlayerText(3, "anhnhoday19917", "n1QsAnLKpQBuxVv1GdQxQxbh1zeZyPmAmws", ["A","C"], 3);
+    //     result = result + " " + this.addNewPlayerToGame(1, playerText3);
+    //     var playerText4 = this._createPlayerText(4, "anhnhoday19918", "n1VGRKhLC9PY7r9bqEoVjmH86FbrFfsgK6S", ["A","C"], 4);
+    //     result = result + " " + this.addNewPlayerToGame(1, playerText4);
+    //     var playerText5 = this._createPlayerText(5, "anhnhoday19919", "n1HyMfzqqZwyz1euvZEaq7Z1MjqaQ8TkeAn", ["A","C"], 5);
+    //     result = result + " " + this.addNewPlayerToGame(1, playerText5);
+    //     result = result + "                                                                                              ";
+    //     result = result + " " + this.getWinnerResultByGameId(1);
+    //     result = result + "                                                                                              ";
+    //     result = result + " " + this.getGameHistoryByBusinessId(1);
+    //     result = result + "                                                                                              ";
+    //     result = result + " " + this.getGameResultByGameId(1);
+    //     result = result + "                                                                                              ";
+    //     result = result + " " + this.stopGame(1, 1);
+    //     return result;
+    // }
 }
+
+module.exports = BLuckyCounter;
