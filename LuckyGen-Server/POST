@@ -1,0 +1,12 @@
+HTTP/1.1 404 Not Found
+x-frame-options: SAMEORIGIN
+x-xss-protection: 1; mode=block
+Content-Security-Policy: default-src 'self'
+X-Content-Type-Options: nosniff
+Content-Type: text/html; charset=utf-8
+Content-Length: 151
+set-cookie: connect.sid=s%3AlWlDy4vB0V3zrXmVjiEn3HyVOgTRIzRB.kDQpQjRBne5mK%2F455A%2BhJQ6Ky3chT6n338VP8QXzcr8; Path=/; Expires=Fri, 27 Jul 2018 15:52:23 GMT; HttpOnly
+Vary: Accept-Encoding
+Date: Fri, 13 Jul 2018 15:52:23 GMT
+Connection: keep-alive
+
