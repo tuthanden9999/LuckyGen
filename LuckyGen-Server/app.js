@@ -31,13 +31,14 @@ dotenv.load({ path: '.env.example' });
  * Controllers (route handlers).
  */
 
-const allowAPIRoutes = ['/api/business', '/api/upload'];
+const allowAPIRoutes = ['/api/business', '/api/upload', '/api/games'];
 const homeController = require('./controllers/home');
 const userController = require('./controllers/user');
 const apiController = require('./controllers/api');
 const contactController = require('./controllers/contact');
 const businessController = require('./controllers/business');
 const gameController = require('./controllers/game');
+const tokenController = require('./controllers/token');
 
 /**
  * API keys and Passport configuration.
@@ -127,7 +128,8 @@ app.use('/webfonts', express.static(path.join(__dirname, 'node_modules/@fortawes
  * Luckygen main routes
  */
 app.get('/game/create', gameController.create);
-app.post('/game', gameController.store);
+app.post('/api/games', passport.authenticate('jwt', {session: false}), gameController.store);
+app.post('/token', tokenController.store);
 app.post('/api/business', businessController.postBusiness);
 
 

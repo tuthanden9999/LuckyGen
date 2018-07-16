@@ -1,4 +1,5 @@
 const { parseObjectOfArray } = require('../helpers/utils')
+const passport = require('passport')
 
 /**
  * GET /create
@@ -13,14 +14,14 @@ exports.create = (req, res) => {
  * Post /
  * Process create new game.
  */
-exports.store = (req, res) => {
-	const prizes = parseObjectOfArray(req.body.prizes)
+exports.store = (req, res, next) => {
+	// const prizes = parseObjectOfArray(req.body.prizes)
 
 	// Submit to the net
 	const gameID = Math.random()
 	
 
-	res.json({
+	return res.json({
 		game_id: Math.random()
 	})
 }

@@ -25,10 +25,10 @@ const userSchema = new mongoose.Schema({
     picture: String
   },
 
-  clients: [
+  tokens: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Client'
+      ref: 'Token'
     }
   ]
 }, { timestamps: true });

@@ -3,7 +3,8 @@ const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const passport = require('passport');
 const User = require('../models/User');
-
+const Token = require('../models/Token');
+const jwt = require('jsonwebtoken');
 const randomBytesAsync = promisify(crypto.randomBytes);
 
 /**
@@ -119,10 +120,15 @@ exports.postSignup = (req, res, next) => {
  * GET /account
  * Profile page.
  */
-exports.getAccount = (req, res) => {
-  res.render('account/profile', {
-    title: 'Account Management'
-  });
+exports.getAccount = (req, res, next) => {
+  Token.find({ _id: { $in: req.user.tokens }}, function(err, tokens) {
+    if (err) return next(err)
+
+    res.render('account/profile', {
+      title: 'Account Management',
+      tokens: tokens || []
+    });
+  })
 };
 
 /**
