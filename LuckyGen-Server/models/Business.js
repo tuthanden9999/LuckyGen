@@ -4,7 +4,13 @@ const mongoose = require('mongoose');
 
 const businessSchema = new mongoose.Schema({
   name: String,
-  secret: String
+  secret: String,
+  clients: [
+  	{
+  		type: mongoose.Schema.Types.ObjectId,
+  		ref: 'Client'
+  	}
+  ]
 }, { timestamps: true });
 
 

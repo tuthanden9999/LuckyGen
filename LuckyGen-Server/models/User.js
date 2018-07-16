@@ -23,7 +23,14 @@ const userSchema = new mongoose.Schema({
     location: String,
     website: String,
     picture: String
-  }
+  },
+
+  clients: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Client'
+    }
+  ]
 }, { timestamps: true });
 
 /**

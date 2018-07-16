@@ -37,6 +37,7 @@ const userController = require('./controllers/user');
 const apiController = require('./controllers/api');
 const contactController = require('./controllers/contact');
 const businessController = require('./controllers/business');
+const gameController = require('./controllers/game');
 
 /**
  * API keys and Passport configuration.
@@ -125,6 +126,8 @@ app.use('/webfonts', express.static(path.join(__dirname, 'node_modules/@fortawes
 /**
  * Luckygen main routes
  */
+app.get('/game/create', gameController.create);
+app.post('/game', gameController.store);
 app.post('/api/business', businessController.postBusiness);
 
 

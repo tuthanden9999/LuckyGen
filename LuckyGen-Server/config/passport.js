@@ -12,6 +12,7 @@ const { OAuthStrategy } = require('passport-oauth');
 const { OAuth2Strategy } = require('passport-oauth');
 
 const User = require('../models/User');
+const Business = require('../models/Business');
 
 passport.serializeUser((user, done) => {
   done(null, user.id);
@@ -28,6 +29,25 @@ passport.deserializeUser((id, done) => {
  */
 passport.use(new LocalStrategy({ usernameField: 'email' }, (email, password, done) => {
   User.findOne({ email: email.toLowerCase() }, (err, user) => {
+    if (err) { return done(err); }
+    if (!user) {
+      return done(null, false, { msg: `Email ${email} not found.` });
+    }
+    user.comparePassword(password, (err, isMatch) => {
+      if (err) { return done(err); }
+      if (isMatch) {
+        return done(null, user);
+      }
+      return done(null, false, { msg: 'Invalid email or password.' });
+    });
+  });
+}));
+
+/**
+ * Authenticate use client id and secret.
+ */
+passport.use('local-business', new LocalStrategy({ usernameField: 'client_id', passwordField: 'client_secret' }, (client_id, client_secret, done) => {
+  Business.findOne({ email: email.toLowerCase() }, (err, user) => {
     if (err) { return done(err); }
     if (!user) {
       return done(null, false, { msg: `Email ${email} not found.` });
