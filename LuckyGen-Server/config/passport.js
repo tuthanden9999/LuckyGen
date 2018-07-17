@@ -10,6 +10,7 @@ const { Strategy: LinkedInStrategy } = require('passport-linkedin-oauth2');
 const { Strategy: OpenIDStrategy } = require('passport-openid');
 const { OAuthStrategy } = require('passport-oauth');
 const { OAuth2Strategy } = require('passport-oauth');
+const { Strategy: PassportJWTStrategy, ExtractJwt } = require("passport-jwt");
 
 const User = require('../models/User');
 
@@ -41,6 +42,24 @@ passport.use(new LocalStrategy({ usernameField: 'email' }, (email, password, don
     });
   });
 }));
+
+
+passport.use(new PassportJWTStrategy({
+        jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+        secretOrKey   : 'your_jwt_secret'
+    },
+    function (jwtPayload, cb) {
+        //find the user in db if needed. This functionality may be omitted if you store everything you'll need in JWT payload.
+        return User.findOne({ _id: jwtPayload.data.user_id })
+            .then(user => {
+                return cb(null, user);
+            })
+            .catch(err => {
+                return cb(err);
+            });
+    }
+));
+
 
 /**
  * OAuth Strategy Overview

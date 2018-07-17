@@ -1,0 +1,56 @@
+extends ../layout
+
+block scripts
+  script(src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js")
+  script(src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js")
+  script.
+    hljs.initHighlightingOnLoad();
+    new ClipboardJS('.btn');
+
+block styles
+  link(href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-dark.min.css", rel="stylesheet")
+  style.
+    .btn-copy{
+      float: right;
+    }
+
+block content
+  .pb-2.mt-2.mb-4.border-bottom
+    h3 Your games
+
+  .pt-3
+    #accordion
+      each game, index in games
+            .card.mb-2
+              .card-header
+                h5.mb-0
+                  button.btn.btn-link(data-toggle='collapse', data-target='#'+'collapse'+index, aria-expanded='true', aria-controls='collapse'+index)
+                    =(index + 1) + '. ' + game.title
+              .collapse(data-parent='#accordion', id='collapse'+index, class=index === 0 ? 'show' : '')
+                .card-body
+                  p.text-right
+                    textarea(id="widget-" + index, hidden=true, value=game.widget)
+                      =game.widget
+                    button.btn.btn-outline-dark.btn-copy(data-clipboard-target="#widget-" + index)
+                      | Copy 
+                      i.fa.fa-clipboard.mr-0
+                  nav
+                    #nav-tab.nav.nav-tabs(role='tablist')
+                      a#nav-home-tab.nav-item.nav-link.active(data-toggle='tab', href='#nav-code-' + index, role='tab') 
+                        | Code
+                      a#nav-profile-tab.nav-item.nav-link(data-toggle='tab', href='#nav-preview-' + index, role='tab')
+                        | Preview
+                  #nav-tabContent.tab-content
+                    .tab-pane.fade.show.active(role='tabpanel', id='nav-code-' + index)
+                      pre
+                        code.html
+                          =game.widget
+                    .tab-pane.fade(role='tabpanel', id='nav-preview-' + index)
+                      iframe(src='/games/'+ game._id +'/preview', height='600px', width='100%', frameborder='0')
+                  
+                    
+      else 
+        span You don't have any game yet
+
+
+  

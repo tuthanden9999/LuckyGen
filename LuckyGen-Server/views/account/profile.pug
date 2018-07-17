@@ -45,6 +45,17 @@ block content
           | Update Profile
 
   .pb-2.mt-2.mb-4.border-bottom
+    h3 API Keys 
+    .row
+      .col-md-8.offset-md-2
+        include modals/create-new-api-key.pug
+        ul.list-group.list-group-flush.mt-2
+          each token in tokens
+            li.list-group-item=token.title
+          else 
+            span You don't have any token yet      
+
+  .pb-2.mt-2.mb-4.border-bottom
     h3 Change Password
 
   form(action='/account/password', method='POST')
