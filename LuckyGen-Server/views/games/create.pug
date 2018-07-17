@@ -14,12 +14,12 @@ block content
     #game1.tab-pane.fade.show.active(role='tabpanel' aria-labelledby='home-tab')
       .row
         .col-md-8.offset-md-2
-          form(method='POST', action='/game')
+          form(method='POST', action='/games')
             input(type='hidden', name='_csrf', value=_csrf)
             .form-group.row
-              label(class='col-md-2 col-form-label font-weight-bold', for='name') Game title:
+              label(class='col-md-2 col-form-label font-weight-bold', for='title') Game title:
               .col-md-10
-                input.form-control(type='text', name='name', id='name', autofocus=true, required=true)
+                input.form-control(type='text', name='title', id='title', autofocus=true, required=true)
             .form-group.row
               label(class='col-md-2 col-form-label font-weight-bold', for='email') Prizes:
             .prizes-container

@@ -1,0 +1,63 @@
+body
+{
+    font-family: arial;
+}
+
+td.the_wheel
+{
+    background-position: center;
+    background-repeat: none;
+}
+
+h1, p
+{
+    margin: 0;
+}
+
+div.power_controls
+{
+    margin-right:70px;
+}
+
+div.html5_logo
+{
+    margin-left:70px;
+}
+
+table.power
+{
+    background-color: #cccccc;
+    cursor: pointer;
+    border:1px solid #333333;
+}
+
+table.power th
+{
+    background-color: white;
+    cursor: default;
+}
+
+td.pw1
+{
+    background-color: #6fe8f0;
+}
+
+td.pw2
+{
+    background-color: #86ef6f;
+}
+
+td.pw3
+{
+    background-color: #ef6f6f;
+}
+
+.clickable
+{
+    cursor: pointer;
+}
+
+.margin_bottom
+{
+    margin-bottom: 5px;
+}

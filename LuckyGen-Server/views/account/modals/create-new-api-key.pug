@@ -10,7 +10,7 @@ button.btn.btn-primary.btn-sm(type='button', data-toggle='modal', data-target='#
           span(aria-hidden='true') &times;
       .modal-body
         #result.alert.alert-success
-        form#create-token-form(action='/token', method='POST')
+        form#create-token-form(action='/tokens', method='POST')
           input(type='hidden', name='_csrf', value=_csrf)
           .form-group.row
             label.col-md-3.col-form-label.font-weight-bold.text-right(for='name') Name of your token
@@ -37,7 +37,7 @@ block append scripts
 
         $.ajax({
           type: "POST",
-          url: '/token',
+          url: '/tokens',
           data: JSON.stringify(data),
           contentType: 'application/json',
           dataType: "json",
