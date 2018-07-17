@@ -50,6 +50,11 @@ interface WinnerStructure {
     prize: Prize;
 }
 
+interface PlayerHistoryStructure {
+    turn: number;
+    prize: Prize;
+}
+
 class Game {
     gameId: number;
     playerList: Player[];
@@ -82,7 +87,8 @@ class Player {
     playerId: number;
     playerName: string;
     playerAddress: string;
-    spinNumberOf: number
+    spinNumberOf: number;
+    history: PlayerHistoryStructure[];
     public constructor(text ? : string) {
         if(text) {
             let playerObj = JSON.parse(text);
@@ -90,11 +96,13 @@ class Player {
             this.playerName = playerObj.playerName;
             this.playerAddress = playerObj.playerAddress;
             this.spinNumberOf = playerObj.spinNumberOf;
+            this.history = playerObj.history;
         } else {
             this.playerId = 0;
             this.playerName = "";
             this.playerAddress = "";
             this.spinNumberOf = 0;
+            this.history = [];
         }
     }
 }
@@ -125,51 +133,62 @@ class BLuckySpin {
         return "addNewGameToBusiness success";
     }
 
-    addNewPlayerToGame(gameId, playerText) {
-        var tmpPlayer = new Player(playerText);
-        var currentGame = this.gameMap.get(gameId);
-        if(currentGame.isFinished) {
-            return "Game is finished.";
-        }
-
-        var isExistPlayer = currentGame.playerList.includes(tmpPlayer)
-        if(!isExistPlayer) {
-            currentGame.playerList.push(tmpPlayer);
-        } else {
-        }
-        this.gameMap.put(currentGame.gameId, currentGame);
-        return "addNewPlayerToGame success";
-    }
-
     _rand() {
         //Math.random.seed(Blockchain.block.seed + Blockchain.transaction.hash);
         return Math.floor(Math.random() * 10000 + 1);
     }
 
-    spin(gameId, playerId) {
+    spin(gameId, playerText) {
+        var result = -1;
         var currentGame = this.gameMap.get(gameId);
-        var tmpPlayerIndex = currentGame.playerList.findIndex(p => p.playerId == playerId);
+
+        var tmpPlayer = new Player(playerText);
+        if(currentGame.isFinished) {
+            return result;
+        }
+        var tmpPlayerIndex = currentGame.playerList.findIndex(p => p.playerId == tmpPlayer.playerId);
         if(tmpPlayerIndex == -1) {
-            return "This player isn't exist.";
-        } 
+            currentGame.playerList.push(tmpPlayer);
+            this.gameMap.put(currentGame.gameId, currentGame);
+            tmpPlayerIndex = currentGame.playerList.length - 1;
+        } else {
+        }
 
         if(currentGame.playerList[tmpPlayerIndex].spinNumberOf > 0) {
             var randNumber = this._rand();
             var currentPointToWin = 0; 
             currentGame.playerList[tmpPlayerIndex].spinNumberOf = currentGame.playerList[tmpPlayerIndex].spinNumberOf - 1;
 
+            var isWin = false;
             for(var i = 0; i < currentGame.prizeStructure.length; i++) {
                 currentPointToWin = currentPointToWin + currentGame.prizeStructure[i].prizePercentage * 100;
-                if(randNumber <= currentPointToWin) {
+                if(randNumber <= currentPointToWin && currentGame.prizeStructure[i].prizeRemain > 0) {
                     var newWinner = {};
                     newWinner.player = currentGame.playerList[tmpPlayerIndex];
                     newWinner.prize = currentGame.prizeStructure[i].prize;
+                    currentGame.prizeStructure[i].prizeRemain = currentGame.prizeStructure[i].prizeRemain - 1;
                     currentGame.winners.push(newWinner);
+                    result = i + 1;
+
+                    //update history of player
+                    var newHistoryPiece = {};
+                    newHistoryPiece.turn = currentGame.playerList[tmpPlayerIndex].history.length;
+                    newHistoryPiece.prize = currentGame.prizeStructure[i].prize;
+                    currentGame.playerList[tmpPlayerIndex].history.push(newHistoryPiece);
+                    isWin = true;
                     break;
                 }
             }
+            if(! isWin) {
+                //update history of player
+                var newHistoryPiece = {};
+                newHistoryPiece.turn = currentGame.playerList[tmpPlayerIndex].history.length;
+                newHistoryPiece.prize = {};
+                currentGame.playerList[tmpPlayerIndex].history.push(newHistoryPiece);
+            }
             this.gameMap.put(currentGame.gameId, currentGame);
         }
+        return result;
     }
 
     getWinnersByGameId(gameId) {
@@ -180,6 +199,16 @@ class BLuckySpin {
     getGameResultByGameId(gameId) {
         var currentGame = this.gameMap.get(gameId);
         return JSON.stringify(currentGame); 
+    }
+
+    getGameHistoryOfPlayer(gameId, playerId) {
+        var currentGame = this.gameMap.get(gameId);
+        var tmpPlayerIndex = currentGame.playerList.findIndex(p => p.playerId == playerId.playerId);
+        if(tmpPlayerIndex == -1) {
+            return "";
+        } else {
+            return JSON.stringify(currentGame.playerList[tmpPlayerIndex].history);
+        }
     }
 
     getGameHistoryByBusinessId(businessId) {
@@ -204,12 +233,13 @@ class BLuckySpin {
         return "stopGame fail";
     }
 
-    // _createPlayerText(playerId, playerName, playerAddress, spinNumberOf) {
+    // _createPlayerText(playerId, playerName, playerAddress, spinNumberOf, history) {
     //     var player = {}
     //     player.playerId = playerId;
     //     player.playerName = playerName;
     //     player.playerAddress = playerAddress;
     //     player.spinNumberOf = spinNumberOf;
+    //     player.history = history;
     //     return JSON.stringify(player);
     // }
 
@@ -244,29 +274,31 @@ class BLuckySpin {
     //     gameText.prizeStructure.push(this._createPrizeStructure(3, "The third", 10, 5, 5));
     //     gameText.prizeStructure.push(this._createPrizeStructure(4, "The forth", 15, 10, 10));
     //     result = result + " " + this.addNewGameToBusiness(1, JSON.stringify(gameText));
-    //     result = result + "                                                                                              ";
-    //     var playerText1 = this._createPlayerText(1, "anhnhoday19915", "n1JPesSsumXpnagcTdwBXUHNsa5GofeM4Ud", 1);
-    //     result = result + " " + this.addNewPlayerToGame(1, playerText1);
-    //     this.spin(1, 1);
-    //     var playerText2 = this._createPlayerText(2, "anhnhoday19916", "n1bNsEaLp7wWRUNq81juZPJU7M6FNEUzhT4", 1);
-    //     result = result + " " + this.addNewPlayerToGame(1, playerText2);
-    //     this.spin(1, 2);
-    //     var playerText3 = this._createPlayerText(3, "anhnhoday19917", "n1QsAnLKpQBuxVv1GdQxQxbh1zeZyPmAmws", 1);
-    //     result = result + " " + this.addNewPlayerToGame(1, playerText3);
-    //     this.spin(1, 3);
-    //     var playerText4 = this._createPlayerText(4, "anhnhoday19918", "n1VGRKhLC9PY7r9bqEoVjmH86FbrFfsgK6S", 1);
-    //     result = result + " " + this.addNewPlayerToGame(1, playerText4);
-    //     this.spin(1, 4);
-    //     var playerText5 = this._createPlayerText(5, "anhnhoday19919", "n1HyMfzqqZwyz1euvZEaq7Z1MjqaQ8TkeAn", 1);
-    //     result = result + " " + this.addNewPlayerToGame(1, playerText5);
-    //     this.spin(1, 5);
-    //     result = result + "                                                                                              ";
+    //     result = result + "          ";
+    //     var playerText1 = this._createPlayerText(1, "anhnhoday19915", "n1JPesSsumXpnagcTdwBXUHNsa5GofeM4Ud", 1, []);
+    //     result = result + " " + this.spin(1, playerText1);
+    //     result = result + "          ";
+    //     var playerText2 = this._createPlayerText(2, "anhnhoday19916", "n1bNsEaLp7wWRUNq81juZPJU7M6FNEUzhT4", 1, []);
+    //     result = result + " " + this.spin(1, playerText2);
+    //     result = result + "          ";
+    //     var playerText3 = this._createPlayerText(3, "anhnhoday19917", "n1QsAnLKpQBuxVv1GdQxQxbh1zeZyPmAmws", 1, []);
+    //     result = result + " " + this.spin(1, playerText3);
+    //     result = result + "          ";
+    //     var playerText4 = this._createPlayerText(4, "anhnhoday19918", "n1VGRKhLC9PY7r9bqEoVjmH86FbrFfsgK6S", 1, []);
+    //     result = result + " " + this.spin(1, playerText4);
+    //     result = result + "          ";
+    //     var playerText5 = this._createPlayerText(5, "anhnhoday19919", "n1HyMfzqqZwyz1euvZEaq7Z1MjqaQ8TkeAn", 1, []);
+    //     result = result + " " + this.spin(1, playerText5);
+    //     result = result + "          ";
+    //     result = result + "          ";
+    //     result = result + " " + this.getGameHistoryOfPlayer(1, 2);
+    //     result = result + "          ";
     //     result = result + " " + this.getWinnersByGameId(1);
-    //     result = result + "                                                                                              ";
+    //     result = result + "          ";
     //     result = result + " " + this.getGameHistoryByBusinessId(1);
-    //     result = result + "                                                                                              ";
+    //     result = result + "          ";
     //     result = result + " " + this.getGameResultByGameId(1);
-    //     result = result + "                                                                                              ";
+    //     result = result + "          ";
     //     result = result + " " + this.stopGame(1, 1);
     //     return result;
     // }
