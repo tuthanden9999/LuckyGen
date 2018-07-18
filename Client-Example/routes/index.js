@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 var SDK = require('../../LuckyGen-Node-SDK')
 
-const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InRva2VuX2lkIjoiNWI0ZjAzNGRjNjZjM2EwMTQ4ZDg3Y2ZkIiwidXNlcl9pZCI6IjViNGM2ODUwYzQxNGZiMDFmMjUwZTU0ZCJ9LCJpYXQiOjE1MzE5MDQ4NDUsImV4cCI6MTU2MzQ2MjQ0NX0.pHXytsIkRbknxwkvL0dH3kzZzF_I0kvjiGGcrxrkwJw'
+const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InRva2VuX2lkIjoiNWI0ZjQ1MGMyY2RiMmYwMDExMmU5OWNjIiwidXNlcl9pZCI6IjViNGY0NDk0MmNkYjJmMDAxMTJlOTljYiJ9LCJpYXQiOjE1MzE5MjE2NzYsImV4cCI6MTU2MzQ3OTI3Nn0.f726qmBh2b8DV-HeKeba4SC90IlBWFASUNE3dmLmvfY'
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
