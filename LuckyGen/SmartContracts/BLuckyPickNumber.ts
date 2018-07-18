@@ -148,6 +148,8 @@ class BLuckyPickNumber {
             tmpPlayerIndex = currentGame.playerList.length - 1;
         } else {
         }
+
+        return "addNewPlayerToGame success.";
     }
 
     pickLuckyNumbers(gameId) {
@@ -174,10 +176,12 @@ class BLuckyPickNumber {
                     var winner = {};
                     winner.player = currentGame.playerList[j];
                     winner.prize = currentGame.prizeStructure[prizeLevel].prize;
-                    currentGame.prizeStructure[prizeLevel].prizeRemain = currentGame.prizeStructure[prizeLevel].prizeRemain - 1;
-                    prizeLevel++;
+                    currentGame.prizeStructure[prizeLevel].prizeRemain = currentGame.prizeStructure[prizeLevel].prizeRemain - 1;   
                     currentGame.winners.push(winner);
-                }
+                }   
+            }
+            if(currentGame.prizeStructure[prizeLevel].prizeRemain == 0) {
+                prizeLevel++;
             }
         }
 
@@ -216,6 +220,73 @@ class BLuckyPickNumber {
         }
         return "stopGame fail";
     }
+
+    // _createPlayerText(playerId, playerName, playerAddress, pickedNumbers) {
+    //     var player = {}
+    //     player.playerId = playerId;
+    //     player.playerName = playerName;
+    //     player.playerAddress = playerAddress;
+    //     player.pickedNumbers = pickedNumbers;
+    //     return JSON.stringify(player);
+    // }
+
+    // _createPrizeStructure(prizeId, prizeName, prizeNumberOf, prizeRemain) {
+    //     var tmpPrize = {};
+    //     tmpPrize.prizeId = prizeId;
+    //     tmpPrize.prizeName = prizeName;
+    //     var tmpPrizeStructure = {};
+    //     tmpPrizeStructure.prize = tmpPrize;
+    //     tmpPrizeStructure.prizeNumberOf = prizeNumberOf;
+    //     tmpPrizeStructure.prizeRemain = prizeRemain;
+    //     return tmpPrizeStructure;
+    // }
+
+    // testAll() {
+    //     var result = "";
+    //     var businessText = {};
+    //     businessText.businessId = 1;
+    //     businessText.gameIdList = [1, 2, 3];
+    //     result = result + " "+ this.addNewBusiness(JSON.stringify(businessText));
+    //     result = result + "                                                                                              ";
+    //     var gameText = {};
+    //     gameText.gameId = 1;
+    //     gameText.playerList = [];
+    //     gameText.isFinished = false;
+    //     gameText.winners = [];
+    //     gameText.allPickedNumbers = [];
+
+    //     gameText.prizeStructure = [];
+    //     gameText.prizeStructure.push(this._createPrizeStructure(1, "The first", 1, 1));
+    //     gameText.prizeStructure.push(this._createPrizeStructure(2, "The second", 1, 1));
+    //     gameText.prizeStructure.push(this._createPrizeStructure(3, "The third", 1, 1));
+    //     result = result + " " + this.addNewGameToBusiness(1, JSON.stringify(gameText));
+    //     result = result + "          ";
+    //     var playerText1 = this._createPlayerText(1, "anhnhoday19915", "n1JPesSsumXpnagcTdwBXUHNsa5GofeM4Ud", [13, 23, 15]);
+    //     result = result + this.addNewPlayerToGame(1, playerText1);
+    //     result = result + "          ";
+    //     var playerText2 = this._createPlayerText(2, "anhnhoday19916", "n1bNsEaLp7wWRUNq81juZPJU7M6FNEUzhT4", [10, 2]);
+    //     result = result + this.addNewPlayerToGame(1, playerText2);
+    //     result = result + "          ";
+    //     var playerText3 = this._createPlayerText(3, "anhnhoday19917", "n1QsAnLKpQBuxVv1GdQxQxbh1zeZyPmAmws", [1, 5, 15]);
+    //     result = result + this.addNewPlayerToGame(1, playerText3);
+    //     result = result + "          ";
+    //     var playerText4 = this._createPlayerText(4, "anhnhoday19918", "n1VGRKhLC9PY7r9bqEoVjmH86FbrFfsgK6S", [5]);
+    //     result = result + this.addNewPlayerToGame(1, playerText4);
+    //     result = result + "          ";
+    //     var playerText5 = this._createPlayerText(5, "anhnhoday19919", "n1HyMfzqqZwyz1euvZEaq7Z1MjqaQ8TkeAn", [15, 16, 17]);
+    //     result = result + this.addNewPlayerToGame(1, playerText5);
+    //     result = result + "          ";
+    //     result = result + " " + this.pickLuckyNumbers(1);
+    //     result = result + "          ";
+    //     result = result + " " + this.getWinnersByGameId(1);
+    //     result = result + "          ";
+    //     result = result + " " + this.getGameHistoryByBusinessId(1);
+    //     result = result + "          ";
+    //     result = result + " " + this.getGameResultByGameId(1);
+    //     result = result + "          ";
+    //     result = result + " " + this.stopGame(1, 1);
+    //     return result;
+    // }
 }
 
 module.exports = BLuckyPickNumber;
