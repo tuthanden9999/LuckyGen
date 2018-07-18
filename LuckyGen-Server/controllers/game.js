@@ -49,6 +49,25 @@ exports.preview = (req, res, err) => {
         });
     })
 };
+
+
+/**
+ * Store /:game-id/players
+ * Game page.
+ */
+exports.storeNewPlayer = (req, res, err) => {
+    return res.json({ok: true})
+
+    Game.findOne({
+        _id: req.params.id
+    }, function(err, game) {
+        if (err) return next(err)
+        res.render('games/preview', {
+            title: 'Preview game',
+            game
+        });
+    })
+};
 /**
  * Post /
  * Process create new game.
