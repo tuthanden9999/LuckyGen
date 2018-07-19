@@ -20,6 +20,16 @@ interface PlayerHistoryStructure {
     prize: Prize;
 }
 
+const ErrorMessages = {
+    MASTER_ADDRESS_INVALID: "masterAddress isn't exist.",
+    GAME_INVALID: "game isn't exist.",
+    PRIZE_STRUCTURE_INVALID: "prize structure is invalid.",
+    BUSINESS_ADDRESS_INVALID: "businessAddress isn't exist.",
+    GAME_FINISHED: "game is finished.",
+    PLAYER_EXIST: "player is exist.",
+    PLAYER_INVALID: "player isn't exist."
+}
+
 class Business {
     businessId: string;
     gameIdList: number[];
@@ -38,7 +48,7 @@ class Game {
     prizeStructure: PrizeStructure[];
     winners: WinnerStructure[];
 
-    public constructor(text ? : string, gameId) {
+    public constructor(gameId, text ? : string ) {
         if(text) {
             let gameObj = JSON.parse(text);
             this.gameId = gameId;
@@ -46,8 +56,11 @@ class Game {
             this.playerList = [];
             this.isFinished = false;
 
-            this.prizeStructure = gameObj.prizeStructure;
             this.winners = [];
+            this.prizeStructure = gameObj.prizeStructure;
+            for(var i = 0; i < this.prizeStructure.length; i++) {
+                this.prizeStructure[i].prize.prizeId = i + 1;
+            }
         } else {
             this.gameId = 0;
             this.businessAddress = "";
@@ -57,6 +70,19 @@ class Game {
             this.prizeStructure = [];
             this.winners = [];
         }
+    }
+
+    public isValidPrizeStructure() {
+        var totalPercent = 0;
+        for(var i = 0; i < this.prizeStructure.length; i++) {
+            if(this.prizeStructure[i].prizePercentage <= 0 || this.prizeStructure[i].prizePercentage >= 100) {
+                return false;
+            } else {
+                totalPercent = totalPercent + this.prizeStructure[i].prizePercentage;
+            }
+        }
+        
+        return (totalPercent <= 100);
     }
 }
 
@@ -101,44 +127,45 @@ class BLuckySpin {
 
     addNewGameToBusiness(businessId, gameText) {
         if(Blockchain.transaction.from !== this.masterAddress) {
-            return "addNewGameToBusiness fail: masterAddress isn't exist.";
+            throw new Error(ErrorMessages.MASTER_ADDRESS_INVALID);
         }
         var currentBusiness = this.businessMap.get(businessId);
         if( ! currentBusiness) {
             currentBusiness = new Business(businessId);
             this.businessMap.put(currentBusiness.businessId, currentBusiness);
-            //return JSON.stringify("addNewGameToBusiness test: " + currentBusiness); 
         }
 
-        var newGame = new Game(gameText, this.gameSize + 1);
+        var newGame = new Game(this.gameSize + 1, gameText);
+        if( ! newGame.isValidPrizeStructure()) {
+            throw new Error(ErrorMessages.PRIZE_STRUCTURE_INVALID);
+        } 
+
         this.gameMap.put(newGame.gameId, newGame);
         this.gameSize = this.gameSize + 1;
         currentBusiness.gameIdList.push(newGame.gameId);
         this.businessMap.put(currentBusiness.businessId, currentBusiness);
-        return "addNewGameToBusiness success.";
     }
 
     addNewPlayerToGame(gameId, playerText) {
         var currentGame = this.gameMap.get(gameId);
         if( ! currentGame) {
-            return "addNewPlayerToGame fail: game isn't exist.";
+            throw new Error(ErrorMessages.GAME_INVALID);
         }
         if(Blockchain.transaction.from !== currentGame.businessAddress) {
-            return "addNewPlayerToGame fail: businessAddress isn't exist.: " + currentGame.businessAddress + " : " + Blockchain.transaction.from;
+            throw new Error(ErrorMessages.BUSINESS_ADDRESS_INVALID);
         }
         var tmpPlayer = new Player(playerText);
         if(currentGame.isFinished) {
-            return "addNewPlayerToGame fail: game is finished.";
+            throw new Error(ErrorMessages.GAME_FINISHED);
         }
 
         var tmpPlayerIndex = currentGame.playerList.findIndex(p => p.playerId === tmpPlayer.playerId || p.playerAddress === tmpPlayer.playerAddress);
         if(tmpPlayerIndex === -1) {
             currentGame.playerList.push(tmpPlayer);
         } else {
-            return "addNewPlayerToGame fail: player is exist."
+            throw new Error(ErrorMessages.PLAYER_EXIST);
         }
         this.gameMap.put(currentGame.gameId, currentGame);
-        return "addNewPlayerToGame success";
     }
 
     _rand() {
@@ -150,14 +177,14 @@ class BLuckySpin {
         var result = -1;
         var currentGame = this.gameMap.get(gameId);
         if( ! currentGame) {
-            return "spin fail: game isn't exist.";
+            throw new Error(ErrorMessages.GAME_INVALID);
         }
         if(currentGame.isFinished) {
-            return result;
+            throw new Error(ErrorMessages.GAME_FINISHED);
         }
         var tmpPlayerIndex = currentGame.playerList.findIndex(p => p.playerId === playerId);
         if(tmpPlayerIndex === -1) {
-            return "spin fail: player isn't exist.";
+            throw new Error(ErrorMessages.PLAYER_INVALID);
         }
 
         if(currentGame.playerList[tmpPlayerIndex].spinNumberOf > 0) {
@@ -200,7 +227,7 @@ class BLuckySpin {
     getPlayerById(gameId, playerId) {
         var currentGame = this.gameMap.get(gameId);
         if( ! currentGame) {
-            return "getPlayerById fail: game isn't exist";
+            throw new Error(ErrorMessages.GAME_INVALID);
         }
         var tmpPlayer = currentGame.playerList.find(p => p.playerId === playerId);
         return JSON.stringify(tmpPlayer);
@@ -209,7 +236,7 @@ class BLuckySpin {
     getWinnersByGameId(gameId) {
         var currentGame = this.gameMap.get(gameId);
         if( ! currentGame) {
-            return "getPlayerById fail: game isn't exist";
+            throw new Error(ErrorMessages.GAME_INVALID);
         }
         return JSON.stringify(currentGame.winners);
     }
@@ -227,21 +254,19 @@ class BLuckySpin {
     stopGame(businessId, gameId) {
         var currentGame = this.gameMap.get(gameId);
         if( ! currentGame) {
-            return "getPlayerById fail: game isn't exist";
+            throw new Error(ErrorMessages.GAME_INVALID);
         }
         if(currentGame.isFinished) {
-            return "stopGame is stopped";
+            throw new Error(ErrorMessages.GAME_FINISHED);
         }
         var currentBusiness = this.businessMap.get(businessId);
         for(var i = 0; i < currentBusiness.gameIdList.length; i++) {
-            if(currentBusiness.gameIdList[i] == gameId) {
-                this.getGameResultByGameId(gameId);
+            if(currentBusiness.gameIdList[i] === gameId) {
                 currentGame.isFinished = true;
                 this.gameMap.put(currentGame.gameId, currentGame);
-                return "stopGame success";
+                break;
             }
         }
-        return "stopGame fail";
     }
 
     // _createPlayerText(playerId, playerName, playerAddress, spinNumberOf) {
@@ -253,9 +278,8 @@ class BLuckySpin {
     //     return JSON.stringify(player);
     // }
 
-    // _createPrizeStructure(prizeId, prizeName, prizePercentage, prizeNumberOf, prizeRemain) {
+    // _createPrizeStructure(prizeName, prizePercentage, prizeNumberOf, prizeRemain) {
     //     var tmpPrize = {};
-    //     tmpPrize.prizeId = prizeId;
     //     tmpPrize.prizeName = prizeName;
     //     var tmpPrizeStructure = {};
     //     tmpPrizeStructure.prize = tmpPrize;
@@ -271,10 +295,10 @@ class BLuckySpin {
     //     gameText.businessAddress = "n1XyBCnMqZF1WSZQvRtmb48n9pFAutGDC4n";
 
     //     gameText.prizeStructure = [];
-    //     gameText.prizeStructure.push(this._createPrizeStructure(1, "The first", 3, 1, 1));
-    //     gameText.prizeStructure.push(this._createPrizeStructure(2, "The second", 5, 3, 3));
-    //     gameText.prizeStructure.push(this._createPrizeStructure(3, "The third", 10, 5, 5));
-    //     gameText.prizeStructure.push(this._createPrizeStructure(4, "The forth", 15, 10, 10));
+    //     gameText.prizeStructure.push(this._createPrizeStructure( "The first", 3, 1, 1));
+    //     gameText.prizeStructure.push(this._createPrizeStructure( "The second", 5, 3, 3));
+    //     gameText.prizeStructure.push(this._createPrizeStructure( "The third", 10, 5, 5));
+    //     gameText.prizeStructure.push(this._createPrizeStructure( "The forth", 15, 10, 10));
     //     result = result + " " + this.addNewGameToBusiness("1", JSON.stringify(gameText));
     //     result = result + "          ";
     //     var playerText1 = this._createPlayerText("1", "anhnhoday19915", "n1JPesSsumXpnagcTdwBXUHNsa5GofeM4Ud", 1);
