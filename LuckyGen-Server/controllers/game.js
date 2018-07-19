@@ -8,6 +8,8 @@ const ejs = require('ejs')
 const gamePrototype1 = require('fs').readFileSync(__dirname + '/../game-generators/prototypes/game1.ejs', {
     encoding: 'utf-8'
 })
+
+const gameService = require('../contract-services').luckySpin
 /**
  * GET /
  * List all games.
@@ -49,6 +51,42 @@ exports.preview = (req, res, err) => {
         });
     })
 };
+
+
+/**
+ * Store /:game-id/players
+ * Game page.
+ */
+exports.storeNewPlayer = (req, res, err) => {
+    req.assert('player_id', 'Player ID is required')
+    req.assert('player_name', 'Player name is required')
+    req.assert('player_address', 'Player address is required')
+    req.assert('turns', 'Turns is required')
+
+    const errors = req.validationErrors();
+
+    if (errors) {
+        return res.status(400).send(errors);
+    }
+
+    Game.findOne({
+        _id: req.params.id
+    }, function(err, game) {
+        if (err) return res.status(404).send()
+        if (game._user !== req.user._id) return res.status(403).send()
+
+        const { player_id, player_address, player_name, turns } = req.body
+
+        gameService.addNewPlayerToGame({game_id: game._id, player_id, player_address, player_name, turns}, (err, result) => {
+            if (err) {
+                console.log({err})
+                return res.status(500).json({message: 'Add player to game failed!'})
+            }
+
+            res.send(result)
+        })
+    })
+};
 /**
  * Post /
  * Process create new game.
@@ -73,14 +111,45 @@ exports.store = (req, res, next) => {
             return res.redirect('back')
         }
 
-    	User.update({ _id: req.user._id }, { $push: { games: game._id }}, function(error) {
-	    	if (error) {
-                req.flash('errors', err);
-            } else {
-                req.flash('success', { msg: 'Create game successfully!' });
-            }
+        const game_config = {
+            businessAddress: 'my-business-address',
+            prizeStructure: [
+                {
+                    prize: {
+                        prizeId: 1,
+                        prizeName: 'Giai thuong 1'
+                    },
+                    prizePercentage: 50,
+                    prizeNumberOf: 3,
+                    prizeRemain: 3,
+                },
+                {
+                    prize: {
+                        prizeId: 2,
+                        prizeName: 'Giai thuong 2'
+                    },
+                    prizePercentage: 40,
+                    prizeNumberOf: 5,
+                    prizeRemain: 5
+                }
+            ]
+        }
 
-            res.redirect('back')
-	    })
+        gameService.addNewGameToBusiness({ business_id: 1, game_config }, (err, result) => {
+            if (err) {
+                console.log({err})
+                return res.status(500).send(err)
+            }
+            
+            User.update({ _id: req.user._id }, { $push: { games: game._id }}, function(error) {
+                if (error) {
+                    req.flash('errors', err);
+                } else {
+                    req.flash('success', { msg: 'Create game successfully!' });
+                }
+
+                res.redirect('back')
+            })
+        })    	
     })
 }

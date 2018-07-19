@@ -33,6 +33,11 @@ const userSchema = new mongoose.Schema({
   games: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Game'
+  }],
+
+  wallets: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Wallet'
   }]
 
 }, { timestamps: true });

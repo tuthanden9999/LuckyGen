@@ -1,0 +1,293 @@
+<html>
+    <head>
+        <title>Vòng quay may mắn</title>
+        <link rel="stylesheet" href="https://rawgit.com/tuthanden9999/LuckyGen/master/LuckyGen/LuckySpin/css/lucky-spin.css"/>
+    </head>
+    <body onLoad="form_load()" >		
+        <div align="center">
+            <p><h1>Please insert lucky spin here!</h1></p>
+        </div>
+		
+	        <div id="lucky-spin-div-id" align="center" style="background-color: rgb(186, 238, 206);">
+            <table cellpadding="0" cellspacing="0" border="0">
+                <tbody>
+				<!-- <div align="center"> -->
+                <tr>
+					Your Address: <input type="text" name="fname" id ="address" style ="width:400;text-align:center "  placeholder="Your Address">&nbsp;&nbsp;					
+					<input type="submit" value="Submit" id="submit" onclick ='submit();'>
+                </tr> 
+				
+				<!-- <form method="Post" placeholder="Your Address">
+					Your Address: <input type="text" name="fname">&nbsp;&nbsp;					
+					<input type="submit" value="Submit" onclick ='submit();'>
+				</form -->
+				
+				<tr>
+                    <td>
+                        <div class="power_controls">
+                            <img  id="spin_button"  src="https://rawgit.com/tuthanden9999/LuckyGen/master/LuckyGen/LuckySpin/image/spin_off.png"  alt="spin" onclick="Play_spin();" disabled >
+                            <br><br> 
+							<!-- <div id="number">so luot quay: </div> -->
+							So luot quay: <a id="number">...</a>
+							<br> 
+                            &nbsp;&nbsp;<a href="#" onclick="resetWheel(); return false;" align="center">Reset</a>
+                        </div>
+                    </td>
+                    <td width="438" height="582" class="the_wheel" align="center" valign="center">
+                        <canvas id="canvas" width="434" height="434">
+                            <p style="{color: white}" align="center">Sorry, your browser doesn't support canvas. Please try another.</p>
+                        </canvas>
+                    </td>
+                </tr>
+            </tbody></table>
+        </div>		
+        <script id="winwheel-script-id" src="https://rawgit.com/tuthanden9999/LuckyGen/master/LuckyGen/LuckySpin/js/Winwheel.js"></script>
+        <script id="tweenmax-script-id" src="http://cdnjs.cloudflare.com/ajax/libs/gsap/latest/TweenMax.min.js"></script>
+        <script src=js/nebPay.js></script>
+		<script src=js/nebulas.js></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script id="handle-script-id">
+			function form_load(){							
+							getPlayerById();
+							}
+		
+            var theWheel = new Winwheel({
+                'numSegments'  : 32,     
+                'outerRadius'  : 212,   
+                'textFontSize' : 28,    
+                'segments'     :        
+                [
+                    {'fillStyle' : '#ff0000', 'text' : 'Prize 1'},
+                    {'fillStyle' : '#0000ff', 'text' : 'Prize 2'},
+                    {'fillStyle' : '#33ff77', 'text' : 'Prize 3'},
+                    {'fillStyle' : '#808080', 'text' : 'Prize 4'},
+                    {'fillStyle' : '#ff33ff', 'text' : 'Prize 5'},
+                    {'fillStyle' : '#9999ff', 'text' : 'Prize 6'},
+                    {'fillStyle' : '#009966', 'text' : 'Prize 7'},
+                    {'fillStyle' : '#77773c', 'text' : 'Prize 8'},
+                    {'fillStyle' : '#ff2e00', 'text' : 'Prize 9'},
+                    {'fillStyle' : '#0023ff', 'text' : 'Prize 10'},
+                    {'fillStyle' : '#331277', 'text' : 'Prize 11'},
+                    {'fillStyle' : '#812af0', 'text' : 'Prize 12'},
+                    {'fillStyle' : '#fabc2f', 'text' : 'Prize 13'},
+                    {'fillStyle' : '#9234ef', 'text' : 'Prize 14'},
+                    {'fillStyle' : '#0092f6', 'text' : 'Prize 15'},
+                    {'fillStyle' : '#7744ac', 'text' : 'Prize 16'},
+                    {'fillStyle' : '#f234ac', 'text' : 'Prize 17'},
+                    {'fillStyle' : '#002aff', 'text' : 'Prize 18'},
+                    {'fillStyle' : '#31af77', 'text' : 'Prize 19'},
+                    {'fillStyle' : '#824380', 'text' : 'Prize 20'},
+                    {'fillStyle' : '#ff32af', 'text' : 'Prize 21'},
+                    {'fillStyle' : '#c991ff', 'text' : 'Prize 22'},
+                    {'fillStyle' : '#d0a966', 'text' : 'Prize 23'},
+                    {'fillStyle' : '#772aac', 'text' : 'Prize 24'},
+                    {'fillStyle' : '#ffb0a0', 'text' : 'Prize 25'},
+                    {'fillStyle' : '#0a50ff', 'text' : 'Prize 26'},
+                    {'fillStyle' : '#312f77', 'text' : 'Prize 27'},
+                    {'fillStyle' : '#876080', 'text' : 'Prize 28'},
+                    {'fillStyle' : '#ff3a4f', 'text' : 'Prize 29'},
+                    {'fillStyle' : '#999a5f', 'text' : 'Prize 30'},
+                    {'fillStyle' : '#009aa6', 'text' : 'Prize 31'},
+                    {'fillStyle' : '#7772ac', 'text' : 'Prize 32'}
+                ],
+                'animation' :           
+                {
+                    'type'     : 'spinToStop',
+                    'duration' : 5,     
+                    'spins'    : 8,
+                    'callbackFinished' : alertPrize
+                }
+            });
+			
+			
+			
+			// Const register            
+			const SMART_CONSTRACT_ADDR = 'n1pX9zsdTN8yV89b39CeWM8wX5EBZY96TEa' // Test net
+            const HOST_ADDR = 'n1NjDYdhrCSKyapUriiJo2xMk1jhUC93Be5'
+			const ACC_ADDR ='n1NjDYdhrCSKyapUriiJo2xMk1jhUC93Be5'
+            const INTERVAL_TIME = 5000
+            //const MAX_PER_ROUND = 5
+           
+            // NebPay init
+            var NebPay = require("nebpay");    
+            var nebPay = new NebPay();
+            var serialNumber
+            var callbackUrl = NebPay.config.testnetUrl;   
+            var lastNas = 0.1
+           
+            // Nebulas init
+            const nebulas = require("nebulas")
+            const Account = nebulas.Account
+            const neb = new nebulas.Neb();
+            neb.setRequest(new nebulas.HttpRequest("https://testnet.nebulas.io"));
+			
+			
+			function submit(){
+			//alert($("#address").val());			
+				$.post("addressurl.html",
+				{
+				address: document.getElementById('address').value
+				},
+				function(data,status){
+					alert("Data: " + data + "\nStatus: " + status);
+					});
+				}
+			
+			
+			
+			function funcIntervalQuery(serialNumber) {
+                var options = {
+                    callback: callbackUrl
+                }
+                nebPay.queryPayInfo(serialNumber,options) 
+                    .then((resp) => {
+					var respObject = JSON.parse(resp)
+					
+					if(respObject.data.status === 1){
+                            var result = JSON.parse(respObject.data.execute_result)
+                            //this.currentGameID = execute_result.game_id
+							console.log("execute_result= "+result);
+							if (result == "-1") {
+							//alert("ra -1");
+							startSpin(5);
+							}
+							else {
+							startSpin(result);
+							}
+                           clearInterval(this.intervalQuery);
+                        } else if (respObject.data.status === 0) {
+                            //this.result = respObject.data.execute_error
+                            clearInterval(this.intervalQuery);
+                        }
+							
+                    })
+                    .catch(err => console.log(err))
+            }
+			
+			function Play_spin() {
+				var gameId = 1;
+				var playerId = 2;
+                var to = SMART_CONSTRACT_ADDR;
+                var value = 0;
+                var callFunction = "spin";				
+				//console.log("pram = "+pram);
+                var callArgs = JSON.stringify([gameId,playerId]);
+                //var callArgs = JSON.stringify([])
+
+                const serialNumber = nebPay.call(to, value, callFunction, callArgs, {    
+                    callback: callbackUrl
+                });	
+				console.log("serialNumber = "+serialNumber);
+				
+				this.intervalQuery = setInterval(() => {
+						this.funcIntervalQuery(serialNumber);
+						}, INTERVAL_TIME);
+               
+            }
+			
+			function getPlayerById() {
+			
+                const from = HOST_ADDR;
+
+                const gas_price = "1000000"
+                const gas_limit = "2000000"
+                const callFunction = "getPlayerById";
+				var gameId = 1;
+				var playerId = 2;
+				//console.log("pram = "+pram);
+                const callArgs = JSON.stringify([gameId,playerId]); 
+				//const callArgs = pram; 
+                const contract = {
+                    "function": callFunction,
+                    "args": callArgs
+                }
+
+                return neb.api.call(from,SMART_CONSTRACT_ADDR,"0","0",gas_price,gas_limit,contract)
+                    .then(function (res) {			
+					
+					  result = JSON.parse(JSON.parse(res.result));
+					
+                        console.log("res = "+result);
+						console.log("res22 = "+result.playerAddress);
+						
+						document.getElementById('address').value = result.playerAddress;
+						document.getElementById('address').disabled = true;
+						document.getElementById('submit').disabled = true;
+						//var numberof = result.spinNumberOf ;
+						if (result.spinNumberOf != "0" ) {
+						//document.getElementById('spin_button').disabled = true ;
+						document.getElementById('spin_button').src       = "https://raw.githubusercontent.com/tuthanden9999/LuckyGen/master/LuckyGen/LuckySpin/image/spin_on.png";
+						document.getElementById('spin_button').className = "clickable";
+						}
+						document.getElementById("number").innerHTML=result.spinNumberOf;
+                    })
+                    .catch((err) => {
+                        console.log({err})
+                        document.getElementById("number").innerHTML="0";
+                    })
+            }
+			
+            
+            function updateSpin(numSegments, prizes) {
+                theWheel.numSegments = numSegments;
+                while(theWheel.segments.length > theWheel.numSegments + 1) {
+                    theWheel.segments.pop();
+                }
+                console.log(theWheel.numSegments);
+                console.log(theWheel.segments.length);
+                console.log(theWheel.segments);
+                for(var i = 1; i <= theWheel.numSegments; i++) {
+                    theWheel.segments[i].text = prizes[i - 1];
+                }
+                
+                theWheel.updateSegmentSizes();
+                theWheel.draw();
+            }
+           // updateSpin(5, ["Trung thuong 1", "Trung thuong 2", "Trung thuong 3", "Thuong 4", "Chuc ban may man lan sau"]);
+			//updateSpin(5, abc);
+            var wheelSpinning = false;
+            
+            function startSpin(prize)
+            {
+                console.log("prize= " +prize);
+                var stopAt = ((360 / theWheel.numSegments) * (prize - 1)) + 1 + Math.floor((Math.random() *  ((360 / theWheel.numSegments) - 2)  ));
+                theWheel.animation.stopAngle = stopAt;
+                if (wheelSpinning == false)
+                {
+                    document.getElementById('spin_button').src       = "https://rawgit.com/tuthanden9999/LuckyGen/master/LuckyGen/LuckySpin/image/spin_off.png";
+                    document.getElementById('spin_button').className = "";
+
+                    theWheel.startAnimation();
+                    wheelSpinning = true;
+                }
+            }
+					
+			
+            function resetWheel()
+            {
+                theWheel.stopAnimation(false);  
+                theWheel.rotationAngle = 0;     
+                theWheel.draw();                
+
+                wheelSpinning = false;          
+                document.getElementById('spin_button').src       = "https://raw.githubusercontent.com/tuthanden9999/LuckyGen/master/LuckyGen/LuckySpin/image/spin_on.png";
+                document.getElementById('spin_button').className = "clickable";
+            }
+			
+			
+            function alertPrize(indicatedSegment)
+            {
+                alert("You have won " + indicatedSegment.text);
+            }
+			
+					
+			
+        </script>	
+			
+        <script>
+		var abc = ["Trung thuong 1", "Trung thuong 2", "Trung thuong 3", "Thuong 4", "Chuc ban may man lan sau"];
+		updateSpin(5, abc);
+        </script>
+	
+    </body>
+</html>

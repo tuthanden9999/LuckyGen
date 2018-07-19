@@ -90,7 +90,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
 app.use((req, res, next) => {
-  if (allowAPIRoutes.includes(req.path)) {
+  if (req.path.startsWith('/api')) {
     next();
   } else {
     lusca.csrf()(req, res, next);
@@ -127,10 +127,23 @@ app.use('/webfonts', express.static(path.join(__dirname, 'node_modules/@fortawes
  * Luckygen main routes
  */
 app.get('/games/create', passportConfig.isAuthenticated, gameController.create);
+app.post('/api/games/:id/players', passport.authenticate('jwt'), passportConfig.isAuthenticated, gameController.storeNewPlayer);
 app.get('/games/:id/preview', gameController.preview);
 app.get('/games', passportConfig.isAuthenticated, gameController.index);
 app.post('/games', passportConfig.isAuthenticated, gameController.store);
 app.post('/tokens', passportConfig.isAuthenticated, tokenController.store);
+
+const test = require('./contract-services/lucky-spin')
+app.get('/test', function(req, res) {
+  // const {game_id, player_id, player_address, player_name, turns} = {1, 1, 'n1ViirLQuno8zvx8KEf8B3RuXAfvKThY3yP', 'Khanh Tran', 5}
+  // test.addNewPlayerToGame({game_id, player_id, player_address, player_name, turns}, (err, result) => {
+  //     if (err) {
+  //         console.log({err})
+  //         return res.status(500).json({message: 'Add player to game failed!'})
+  //     }
+  //     res.send(result)
+  // })
+})
 
 
 
