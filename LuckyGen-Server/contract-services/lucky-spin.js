@@ -10,7 +10,7 @@ const SMART_CONTRACT_ADDR = "n1rK1CrXBYb21KZsT9NHmxQo4HD9DZHUR2V"
 
 axios.interceptors.request.use(function (config) {
     // Do something before request is sent
-    console.log({config: config.data})
+    // console.log({config: config.data})
     return config;
   }, function (error) {
     // Do something with request error
@@ -79,58 +79,75 @@ module.exports.addNewGameToBusiness = ({
     MASTER_ACC.fromKey(v4, "123456789", true)
 
     console.log("Here!")
-    neb.api.getNebState().then((nebstate) => {
-		neb.api.getAccountState(MASTER_ADDRESS).then((accstate) => {
-			const txData = {
-		        chainID: nebstate.chain_id,
-		        from: MASTER_ACC,
-		        to: SMART_CONTRACT_ADDR,
-		        value: 0,
-		        nonce: parseInt(accstate.nonce) + 1,
-		        gasPrice: 1000000,
-		        gasLimit: 2000000,
-		        contract: {
-			       function: "addNewGameToBusiness",
-			       args: JSON.stringify([1, JSON.stringify(game_config)])
-			   }
-		    }
-		    console.log(txData)
+    try {
+	    neb.api.getNebState().then((nebstate) => {
+			neb.api.getAccountState(MASTER_ADDRESS).then((accstate) => {
+				const txData = {
+			        chainID: nebstate.chain_id,
+			        from: MASTER_ACC,
+			        to: SMART_CONTRACT_ADDR,
+			        value: 0,
+			        nonce: parseInt(accstate.nonce) + 1,
+			        gasPrice: 1000000,
+			        gasLimit: 2000000,
+			        contract: {
+				       function: "addNewGameToBusiness",
+				       args: JSON.stringify([1, JSON.stringify(game_config)])
+				   }
+			    }
+			    console.log({txData})
 
-		    var tx = new Nebulas.Transaction(txData);
-		    tx.signTransaction();
+			    var tx = new Nebulas.Transaction(txData);
+			    tx.signTransaction();
 
-		    neb.api.sendRawTransaction({
-	            data: tx.toProtoString()
-	        }).then(function({txhash}) {
-				console.log({txhash})
-				waitForTxSuccess(txhash, (err, result) => {
-					if (err) return callback(err)
+			    neb.api.sendRawTransaction({
+		            data: tx.toProtoString()
+		        }).then(function({txhash}) {
+					console.log({txhash})
+					waitForTxSuccess(txhash, (err, result) => {
+						if (err) return callback(err)
 
-					return callback(null, result)
-				})
-			}).catch(err => {
+						return callback(null, result)
+					})
+				}).catch(err => {
+					console.log('I have error')
+					callback(err)
+				});
+			}).catch (err => {
+				console.log('Nebulas net error', { err })
 				callback(err)
-			});
+			})
+		}).catch (err => {
+			console.log('Nebulas net error', { err })
+			callback(err)
 		})
-	})
+	} catch (err) {
+		console.log('Nebulas net error', { err })
+		callback(err)
+	}
 }
 
 const waitForTxSuccess = (tx, callback) => {
 	const api = neb.api;
-	const interval = setInterval(() => {
-		api.getTransactionReceipt({hash: tx})
-		.then(function(receipt) {
-			if (receipt.status !== 2) {
-				if (receipt.status === 0) {
-					callback(receipt.execute_error)
-				} else {
-					callback(null, receipt.execute_result)
+	var interval
+	try {
+		interval = setInterval(() => {
+			api.getTransactionReceipt({hash: tx})
+			.then(function(receipt) {
+				console.log({receipt})
+				if (receipt.status !== 2) {
+					clearInterval(interval)
+					if (receipt.status === 0) {
+						return callback(receipt.execute_error)
+					} else {
+						return callback(null, receipt.execute_result)
+					}
 				}
-				clearInterval(interval)
-			}
-		}).catch(err => {
-			clearInterval(interval)
-			callback(err)
-		})
-	}, 1500);
+			}).catch(err => {
+				console.log('Nebulas net error', { err })
+			})
+		}, 1500)
+	} catch(err) {
+		console.log('Nebulas net error', { err })
+	}
 }

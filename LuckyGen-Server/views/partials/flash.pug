@@ -16,3 +16,18 @@ if messages.success
       i.far.fa-times-circle
     for success in messages.success
       div= success.msg
+
+.alert.alert-danger.fade#noti-area-danger
+  button.close(type='button', data-dismiss='alert')
+    i.far.fa-times-circle
+  div.message
+
+.alert.alert-info.fade#noti-area-info
+  button.close(type='button', data-dismiss='alert')
+    i.far.fa-times-circle
+  div.message
+
+.alert.alert-success.fade#noti-area-success
+  button.close(type='button', data-dismiss='alert')
+    i.far.fa-times-circle
+  div.message

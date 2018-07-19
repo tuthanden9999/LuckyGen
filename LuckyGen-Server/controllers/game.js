@@ -137,7 +137,8 @@ exports.store = (req, res, next) => {
 
         gameService.addNewGameToBusiness({ business_id: 1, game_config }, (err, result) => {
             if (err) {
-                console.log({err})
+                console.log('Error when add new game to business into SC. Destroy game with id ' + game._id , {err})
+                game.remove()
                 return res.status(500).send(err)
             }
             
