@@ -1,0 +1,59 @@
+button.btn.btn-primary.btn-sm(type='button', data-toggle='modal', data-target='#exampleModal')
+  | Add new API token
+
+#exampleModal.modal.fade(tabindex='-1' role='dialog' aria-labelledby='exampleModalLabel' aria-hidden='true')
+  .modal-dialog(role='document')
+    .modal-content
+      .modal-header
+        h5#exampleModalLabel.modal-title Create new API token
+        button.close(type='button' data-dismiss='modal' aria-label='Close')
+          span(aria-hidden='true') &times;
+      .modal-body
+        #result.alert.alert-success
+        form#create-token-form(action='/tokens', method='POST')
+          input(type='hidden', name='_csrf', value=_csrf)
+          .form-group.row
+            label.col-md-3.col-form-label.font-weight-bold.text-right(for='name') Name of your token
+            .col-md-7
+              input.form-control(type='text', name='title', id='title', required=true)
+          .form-group
+            .offset-sm-3.col-md-7.pl-2
+              button.btn.btn.btn-primary(type='submit')
+                i.fas.fa-pencil-alt.fa-sm
+                | Create
+      .modal-footer
+        button.btn.btn-secondary(type='button' data-dismiss='modal', onclick="location.reload()") Close
+
+block append scripts
+  script.
+    $("#create-token-form").on('submit', function(event) {
+        event.preventDefault()
+        $("#result").hide()
+        var data = {}
+
+        $(this).serializeArray().forEach(function(pair) {
+          data[pair.name] = pair.value
+        })
+
+        $.ajax({
+          type: "POST",
+          url: '/tokens',
+          data: JSON.stringify(data),
+          contentType: 'application/json',
+          dataType: "json",
+          success: function(data, textStatus, jqXHR) {
+             $("#result").html(`Please save your API token: ${data.token}`)
+             $("#result").show()
+          },
+          error: function(data, textStatus, jqXHR) {
+             alert('Something when wrong!')
+          },
+      })
+    });
+
+block append styles
+  style.
+    #result{
+      display: none;
+      word-break: break-all;
+    }

@@ -1,8 +1,3 @@
-enum GameType {
-    CounterType = 1,
-    SpinType,
-    PickNumberType
-}
 
 class Util {
     static fromNasToWei(value) {
@@ -40,32 +35,18 @@ class Business {
 
 class Game {
     gameId: number;
+    correctAnswerList: string[];
     playerList: Player[];
+    numberOfCorrectPlayer: number;
     isFinished: boolean;
+    theWinnerId: number;
 
     public constructor(text ? : string) {
         if(text) {
             let gameObj = JSON.parse(text);
             this.gameId = gameObj.gameId;
-            this.playerList = gameObj.playerList;
-            this.isFinished = gameObj.isFinished;
-        } else {
-            this.gameId = 0;
-            this.playerList = [];
-            this.isFinished = false;
-        }
-    }
-}
-
-class CounterGame extends Game {
-    correctAnswerList: string[];
-    numberOfCorrectPlayer: number;
-    theWinnerId: number;
-    public constructor(text ? : string) {
-        super(text);
-        if(text) {
-            let gameObj = JSON.parse(text);
             this.correctAnswerList = gameObj.correctAnswerList;
+            this.playerList = gameObj.playerList;
             this.numberOfCorrectPlayer = 0;
             for(var i = 0; i < this.playerList.length; i++) {
                 if(Util.isSameArray(this.correctAnswerList, this.playerList[i].answerList)) {
@@ -73,65 +54,43 @@ class CounterGame extends Game {
                 }
             }
             this.isFinished = gameObj.isFinished;
+            this.theWinnerId = gameObj.theWinnerId;
         } else {
+            this.gameId = 0;
             this.correctAnswerList = [];
+            this.playerList = [];
             this.numberOfCorrectPlayer = 0;
             this.isFinished = false;
+            this.theWinnerId = -1;
         }
     }
-}
-
-class SpinGame extends Game {
-    //còn chưa xử lý 
-}
-
-class PickNumberGame extends Game {
-    //còn chưa xử lý 
 }
 
 class Player {
     playerId: number;
     playerName: string;
     playerAddress: string;
+    answerList: string[];
+    numberGuess: number;
     public constructor(text ? : string) {
         if(text) {
             let playerObj = JSON.parse(text);
             this.playerId = playerObj.playerId;
             this.playerName = playerObj.playerName;
             this.playerAddress = playerObj.playerAddress;
+            this.answerList = playerObj.answerList;
+            this.numberGuess = playerObj.numberGuess;
         } else {
             this.playerId = 0;
             this.playerName = "";
             this.playerAddress = "";
-        }
-    }
-}
-
- class CounterPlayer extends Player{
-    answerList: string[];
-    numberGuess: number;
-    public constructor(text ? : string) {
-        super(text);
-        if(text) {
-            let playerObj = JSON.parse(text);
-            this.answerList = playerObj.answerList;
-            this.numberGuess = playerObj.numberGuess;
-        } else {
             this.answerList = [];
             this.numberGuess = 0;
         }
     }
- }
+}
 
- class SpinPlayer extends Player {
-    //còn chưa xử lý 
- }
-
- class PickNumberPlayer extends Player {
-    //còn chưa xử lý 
- }
-
-class BLuckyGame {
+class BLuckyCounter {
     constructor() {
         LocalContractStorage.defineMapProperties(this, {
             "businessMap": null,
@@ -148,45 +107,16 @@ class BLuckyGame {
         return "addNewBusiness success";
     }
 
-    addNewGameToBusiness(businessId, gameText, gameType: GameType) {
+    addNewGameToBusiness(businessId, gameText) {
         var currentBusiness = this.businessMap.get(businessId);
-        var newGame;
-        switch (gameType) {
-            case GameType.CounterType:
-                newGame = new CounterGame(gameText);
-                break;
-            case GameType.SpinType:
-                newGame = new SpinGame(gameText);
-                break;
-            case GameType.PickNumberType:
-                newGame = new PickNumberGame(gameText);
-                break;
-            default:
-                newGame = new Game(gameText);
-                break;
-        }
-        
+        var newGame = new Game(gameText);
         this.gameMap.put(newGame.gameId, newGame);
         currentBusiness.gameIdList.push(newGame.gameId);
         return "addNewGameToBusiness success";
     }
 
-    addNewPlayerToGame(gameId, playerText, gameType: GameType) {
-        var tmpPlayer;
-        switch (gameType) {
-            case GameType.CounterType:
-                tmpPlayer = new CounterPlayer(playerText);
-                break;
-            case GameType.SpinType:
-                tmpPlayer = new SpinPlayer(playerText);
-                break;
-            case GameType.PickNumberType:
-                tmpPlayer = new PickNumberPlayer(playerText);
-                break;
-            default:
-                tmpPlayer = new Player(playerText);
-                break;
-        }
+    addNewPlayerToGame(gameId, playerText) {
+        var tmpPlayer = new Player(playerText);
         var currentGame = this.gameMap.get(gameId);
         if(currentGame.isFinished) {
             return "Game is finished.";
@@ -197,29 +127,13 @@ class BLuckyGame {
             currentGame.playerList.push(tmpPlayer);
         } else {
         }
-
-        switch (gameType) {
-            case GameType.CounterType:
-                if(Util.isSameArray(currentGame.correctAnswerList, tmpPlayer.answerList)) {
-                    currentGame.numberOfCorrectPlayer = currentGame.numberOfCorrectPlayer + 1;
-                }
-                break;
-            case GameType.SpinType:
-                //còn chưa xử lý 
-                break;
-            case GameType.PickNumberType:
-                //còn chưa xử lý 
-                break;
-            default:
-                
-                break;
+        if(Util.isSameArray(currentGame.correctAnswerList, tmpPlayer.answerList)) {
+            currentGame.numberOfCorrectPlayer = currentGame.numberOfCorrectPlayer + 1;
         }
-        
         this.gameMap.put(currentGame.gameId, currentGame);
         return "addNewPlayerToGame success";
     }
 
-    // đang làm dở đến hàm này
     getWinnerResultByGameId(gameId) {
         var currentGame = this.gameMap.get(gameId);
         if(currentGame.isFinished) {
@@ -318,4 +232,4 @@ class BLuckyGame {
     // }
 }
 
-module.exports = BLuckyGame;
+module.exports = BLuckyCounter;

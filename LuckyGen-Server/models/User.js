@@ -23,7 +23,18 @@ const userSchema = new mongoose.Schema({
     location: String,
     website: String,
     picture: String
-  }
+  },
+
+  tokens: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Token'
+  }],
+
+  games: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Game'
+  }]
+
 }, { timestamps: true });
 
 /**
