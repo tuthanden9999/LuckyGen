@@ -21,7 +21,7 @@ interface PlayerHistoryStructure {
 }
 
 class Business {
-    businessId: number;
+    businessId: string;
     gameIdList: number[];
     public constructor(businessId) {
         this.businessId = businessId;
@@ -38,16 +38,16 @@ class Game {
     prizeStructure: PrizeStructure[];
     winners: WinnerStructure[];
 
-    public constructor(text ? : string) {
+    public constructor(text ? : string, gameId) {
         if(text) {
             let gameObj = JSON.parse(text);
-            this.gameId = gameObj.gameId;
+            this.gameId = gameId;
             this.businessAddress = gameObj.businessAddress;
-            this.playerList = gameObj.playerList;
-            this.isFinished = gameObj.isFinished;
+            this.playerList = [];
+            this.isFinished = false;
 
             this.prizeStructure = gameObj.prizeStructure;
-            this.winners = gameObj.winners;
+            this.winners = [];
         } else {
             this.gameId = 0;
             this.businessAddress = "";
@@ -61,7 +61,7 @@ class Game {
 }
 
 class Player {
-    playerId: number;
+    playerId: string;
     playerName: string;
     playerAddress: string;
     spinNumberOf: number;
@@ -73,9 +73,9 @@ class Player {
             this.playerName = playerObj.playerName;
             this.playerAddress = playerObj.playerAddress;
             this.spinNumberOf = playerObj.spinNumberOf;
-            this.history = playerObj.history;
+            this.history = [];
         } else {
-            this.playerId = 0;
+            this.playerId = "";
             this.playerName = "";
             this.playerAddress = "";
             this.spinNumberOf = 0;
@@ -91,10 +91,12 @@ class BLuckySpin {
             "gameMap": null
         });
         LocalContractStorage.defineProperty(this, "masterAddress");
+        LocalContractStorage.defineProperty(this, "gameSize");
     }
 
     init() {
         this.masterAddress = Blockchain.transaction.from;
+        this.gameSize = 0;
     }
 
     addNewGameToBusiness(businessId, gameText) {
@@ -108,11 +110,12 @@ class BLuckySpin {
             //return JSON.stringify("addNewGameToBusiness test: " + currentBusiness); 
         }
 
-        var newGame = new Game(gameText);
+        var newGame = new Game(gameText, this.gameSize + 1);
         this.gameMap.put(newGame.gameId, newGame);
+        this.gameSize = this.gameSize + 1;
         currentBusiness.gameIdList.push(newGame.gameId);
         this.businessMap.put(currentBusiness.businessId, currentBusiness);
-        return "addNewGameToBusiness success";
+        return "addNewGameToBusiness success.";
     }
 
     addNewPlayerToGame(gameId, playerText) {
@@ -241,13 +244,12 @@ class BLuckySpin {
         return "stopGame fail";
     }
 
-    // _createPlayerText(playerId, playerName, playerAddress, spinNumberOf, history) {
+    // _createPlayerText(playerId, playerName, playerAddress, spinNumberOf) {
     //     var player = {}
     //     player.playerId = playerId;
     //     player.playerName = playerName;
     //     player.playerAddress = playerAddress;
     //     player.spinNumberOf = spinNumberOf;
-    //     player.history = history;
     //     return JSON.stringify(player);
     // }
 
@@ -266,49 +268,45 @@ class BLuckySpin {
     // testAll() {
     //     var result = "";
     //     var gameText = {};
-    //     gameText.gameId = 1;
-    //     gameText.playerList = [];
-    //     gameText.isFinished = false;
     //     gameText.businessAddress = "n1XyBCnMqZF1WSZQvRtmb48n9pFAutGDC4n";
-    //     gameText.winners = [];
 
     //     gameText.prizeStructure = [];
     //     gameText.prizeStructure.push(this._createPrizeStructure(1, "The first", 3, 1, 1));
     //     gameText.prizeStructure.push(this._createPrizeStructure(2, "The second", 5, 3, 3));
     //     gameText.prizeStructure.push(this._createPrizeStructure(3, "The third", 10, 5, 5));
     //     gameText.prizeStructure.push(this._createPrizeStructure(4, "The forth", 15, 10, 10));
-    //     result = result + " " + this.addNewGameToBusiness(1, JSON.stringify(gameText));
+    //     result = result + " " + this.addNewGameToBusiness("1", JSON.stringify(gameText));
     //     result = result + "          ";
-    //     var playerText1 = this._createPlayerText(1, "anhnhoday19915", "n1JPesSsumXpnagcTdwBXUHNsa5GofeM4Ud", 1, []);
+    //     var playerText1 = this._createPlayerText("1", "anhnhoday19915", "n1JPesSsumXpnagcTdwBXUHNsa5GofeM4Ud", 1);
     //     result = result + " " + this.addNewPlayerToGame(1, playerText1);
-    //     result = result + "spin() result: " + this.spin(1, 1);
+    //     result = result + "spin() result: " + this.spin(1, "1");
     //     result = result + "          ";
-    //     var playerText2 = this._createPlayerText(2, "anhnhoday19916", "n1bNsEaLp7wWRUNq81juZPJU7M6FNEUzhT4", 1, []);
+    //     var playerText2 = this._createPlayerText("2", "anhnhoday19916", "n1bNsEaLp7wWRUNq81juZPJU7M6FNEUzhT4", 1);
     //     result = result + " " + this.addNewPlayerToGame(1, playerText2);
-    //     result = result + "spin() result: " + this.spin(1, 2);
+    //     result = result + "spin() result: " + this.spin(1, "2");
     //     result = result + "          ";
-    //     var playerText3 = this._createPlayerText(3, "anhnhoday19917", "n1QsAnLKpQBuxVv1GdQxQxbh1zeZyPmAmws", 1, []);
+    //     var playerText3 = this._createPlayerText("3", "anhnhoday19917", "n1QsAnLKpQBuxVv1GdQxQxbh1zeZyPmAmws", 1);
     //     result = result + " " + this.addNewPlayerToGame(1, playerText3);
-    //     result = result + "spin() result: " + this.spin(1, 3);
+    //     result = result + "spin() result: " + this.spin(1, "3");
     //     result = result + "          ";
-    //     var playerText4 = this._createPlayerText(4, "anhnhoday19918", "n1VGRKhLC9PY7r9bqEoVjmH86FbrFfsgK6S", 1, []);
+    //     var playerText4 = this._createPlayerText("4", "anhnhoday19918", "n1VGRKhLC9PY7r9bqEoVjmH86FbrFfsgK6S", 1);
     //     result = result + " " + this.addNewPlayerToGame(1, playerText4);
-    //     result = result + "spin() result: " + this.spin(1, 4);
+    //     result = result + "spin() result: " + this.spin(1, "4");
     //     result = result + "          ";
-    //     var playerText5 = this._createPlayerText(5, "anhnhoday19919", "n1HyMfzqqZwyz1euvZEaq7Z1MjqaQ8TkeAn", 1, []);
+    //     var playerText5 = this._createPlayerText("5", "anhnhoday19919", "n1HyMfzqqZwyz1euvZEaq7Z1MjqaQ8TkeAn", 1);
     //     result = result + " " + this.addNewPlayerToGame(1, playerText5);
-    //     result = result + "spin() result: " + this.spin(1, 5);
+    //     result = result + "spin() result: " + this.spin(1, "5");
     //     result = result + "          ";
     //     result = result + "          ";
-    //     result = result + " " + this.getPlayerById(1, 2);
+    //     result = result + " " + this.getPlayerById(1, "2");
     //     result = result + "          ";
     //     result = result + " " + this.getWinnersByGameId(1);
     //     result = result + "          ";
-    //     result = result + " " + this.getGameHistoryByBusinessId(1);
+    //     result = result + " " + this.getGameHistoryByBusinessId("1");
     //     result = result + "          ";
     //     result = result + " " + this.getGameResultByGameId(1);
     //     result = result + "          ";
-    //     result = result + " " + this.stopGame(1, 1);
+    //     result = result + " " + this.stopGame("1", 1);
     //     return result;
     // }
 }
