@@ -60,6 +60,7 @@ class Game {
             this.prizeStructure = gameObj.prizeStructure;
             for(var i = 0; i < this.prizeStructure.length; i++) {
                 this.prizeStructure[i].prize.prizeId = i + 1;
+                this.prizeStructure[i].prizeRemain = this.prizeStructure[i].prizeNumberOf;
             }
         } else {
             this.gameId = 0;
@@ -278,14 +279,13 @@ class BLuckySpin {
     //     return JSON.stringify(player);
     // }
 
-    // _createPrizeStructure(prizeName, prizePercentage, prizeNumberOf, prizeRemain) {
+    // _createPrizeStructure(prizeName, prizePercentage, prizeNumberOf) {
     //     var tmpPrize = {};
     //     tmpPrize.prizeName = prizeName;
     //     var tmpPrizeStructure = {};
     //     tmpPrizeStructure.prize = tmpPrize;
     //     tmpPrizeStructure.prizePercentage = prizePercentage;
     //     tmpPrizeStructure.prizeNumberOf = prizeNumberOf;
-    //     tmpPrizeStructure.prizeRemain = prizeRemain;
     //     return tmpPrizeStructure;
     // }
 
@@ -295,10 +295,10 @@ class BLuckySpin {
     //     gameText.businessAddress = "n1XyBCnMqZF1WSZQvRtmb48n9pFAutGDC4n";
 
     //     gameText.prizeStructure = [];
-    //     gameText.prizeStructure.push(this._createPrizeStructure( "The first", 3, 1, 1));
-    //     gameText.prizeStructure.push(this._createPrizeStructure( "The second", 5, 3, 3));
-    //     gameText.prizeStructure.push(this._createPrizeStructure( "The third", 10, 5, 5));
-    //     gameText.prizeStructure.push(this._createPrizeStructure( "The forth", 15, 10, 10));
+    //     gameText.prizeStructure.push(this._createPrizeStructure( "The first", 3, 1));
+    //     gameText.prizeStructure.push(this._createPrizeStructure( "The second", 5, 3));
+    //     gameText.prizeStructure.push(this._createPrizeStructure( "The third", 10, 5));
+    //     gameText.prizeStructure.push(this._createPrizeStructure( "The forth", 15, 10));
     //     result = result + " " + this.addNewGameToBusiness("1", JSON.stringify(gameText));
     //     result = result + "          ";
     //     var playerText1 = this._createPlayerText("1", "anhnhoday19915", "n1JPesSsumXpnagcTdwBXUHNsa5GofeM4Ud", 1);
