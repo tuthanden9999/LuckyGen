@@ -145,6 +145,7 @@ class BLuckySpin {
         this.gameSize = this.gameSize + 1;
         currentBusiness.gameIdList.push(newGame.gameId);
         this.businessMap.put(currentBusiness.businessId, currentBusiness);
+        return JSON.stringify(newGame);
     }
 
     addNewPlayerToGame(gameId, playerText) {
@@ -167,6 +168,7 @@ class BLuckySpin {
             throw new Error(ErrorMessages.PLAYER_EXIST);
         }
         this.gameMap.put(currentGame.gameId, currentGame);
+        return JSON.stringify(tmpPlayer);
     }
 
     updateSpinNumber(gameId, playerId, spinNumberOf) {
