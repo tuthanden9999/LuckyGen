@@ -1,24 +1,6 @@
-<div align="center" id="lucky-spin">
-    <table border="0" cellpadding="0" cellspacing="0">
-        <tr>
-            <td>
-                <div class="power_controls">
-                    <img alt="spin" class="clickable" id="spin_button" onclick="startSpin(15);" src="<%= ASSET_HOST %>/widget/image/spin_on.png"/>
-                </div>
-            </td>
-            <td align="center" class="the_wheel" height="582" valign="center" width="438" style='background-image: url("<%= ASSET_HOST %>/image/wheel_back.png")'>
-                <canvas height="434" id="canvas" width="434">
-                </canvas>
-            </td>
-        </tr>
-    </table>
-</div>
+<div id="game-container"></div>
+      
+<script id="handle-script-id" src="<%= ASSET_HOST %>/widget/js/game1.js"></script>
 <script>
-    const ASSET_HOST = "<%= ASSET_HOST %>";
-</script>
-<script id="winwheel-script-id" src="https://rawgit.com/tuthanden9999/LuckyGen/master/LuckyGen/LuckySpin/js/Winwheel.js">
-</script>
-<script id="tweenmax-script-id" src="http://cdnjs.cloudflare.com/ajax/libs/gsap/latest/TweenMax.min.js">
-</script>
-<script id="handle-script-id" src="<%= ASSET_HOST %>/widget/js/game1.js">
+    initSpin(<%= GAME_ID %>, 2, 'https://my-submit-url')
 </script>

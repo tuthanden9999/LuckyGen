@@ -93,16 +93,10 @@ exports.storeNewPlayer = (req, res, err) => {
  */
 exports.store = (req, res, next) => {
 	req.assert('title', 'Please enter game\'s title')
-    // const prizes = parseObjectOfArray(req.body.prizes)
-    // Submit to the net
-    const html = ejs.render(gamePrototype1, {
-        ASSET_HOST: 'http://localhost:8080'
-    })
 
     const game = new Game({
         _user: req.user._id,
         title: req.body.title,
-        widget: html
     })
 
     game.save(function(err) {
@@ -141,6 +135,21 @@ exports.store = (req, res, next) => {
                 game.remove()
                 return res.status(500).send(err)
             }
+
+            try {
+                const gameResult = JSON.parse(JSON.parse(result))
+            } catch (err) {
+                console.log('Error when parse addNewGameToBusiness result from net', result , {err})
+                return res.status(500).send(err)
+            }
+
+            const html = ejs.render(gamePrototype1, {
+                ASSET_HOST: 'http://localhost:8080',
+                GAME_ID: gameResult.gameId
+            })
+
+            game.widget = html
+            game.save()
             
             User.update({ _id: req.user._id }, { $push: { games: game._id }}, function(error) {
                 if (error) {
