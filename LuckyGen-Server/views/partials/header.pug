@@ -19,6 +19,8 @@
           li.nav-item(class=(title === 'Create Account') ? 'active' : undefined)
             a.nav-link(href='/signup') Create Account
         else
+          li.nav-item(class=(title === 'Account Management') ? 'active' : undefined)
+            a.nav-link(href='/account') My Account
           li.dropdown(class=(title === 'Account Management') ? 'active' : undefined).nav-item
             a.dropdown-toggle.nav-link(href='#', data-toggle='dropdown')
               if user.profile.picture
@@ -28,8 +30,6 @@
               span= user.profile.name || user.email || user.id
               i.caret
             ul.dropdown-menu
-              li.dropdown-item
-                a(href='/account') My Account
               li.divider.dropdown-item
               li.dropdown-item
                 a(href='/logout') Logout

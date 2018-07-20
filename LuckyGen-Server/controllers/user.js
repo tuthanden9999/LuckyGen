@@ -6,6 +6,7 @@ const User = require('../models/User');
 const Token = require('../models/Token');
 const jwt = require('jsonwebtoken');
 const randomBytesAsync = promisify(crypto.randomBytes);
+const neb = require('../contract-services/neb')
 
 /**
  * GET /login
@@ -93,27 +94,32 @@ exports.postSignup = (req, res, next) => {
     return res.redirect('/signup');
   }
 
-  const user = new User({
-    email: req.body.email,
-    password: req.body.password
-  });
-
-  User.findOne({ email: req.body.email }, (err, existingUser) => {
+  neb.newAccount((err, wallet) => {
     if (err) { return next(err); }
-    if (existingUser) {
-      req.flash('errors', { msg: 'Account with that email address already exists.' });
-      return res.redirect('/signup');
-    }
-    user.save((err) => {
+
+    const user = new User({
+      email: req.body.email,
+      password: req.body.password,
+      wallets: [wallet._id]
+    });
+
+    User.findOne({ email: req.body.email }, (err, existingUser) => {
       if (err) { return next(err); }
-      req.logIn(user, (err) => {
-        if (err) {
-          return next(err);
-        }
-        res.redirect('/');
+      if (existingUser) {
+        req.flash('errors', { msg: 'Account with that email address already exists.' });
+        return res.redirect('/signup');
+      }
+      user.save((err) => {
+        if (err) { return next(err); }
+        req.logIn(user, (err) => {
+          if (err) {
+            return next(err);
+          }
+          res.redirect('/');
+        });
       });
     });
-  });
+  }) 
 };
 
 /**

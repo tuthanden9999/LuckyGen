@@ -14,21 +14,23 @@ block content
     #game1.tab-pane.fade.show.active(role='tabpanel' aria-labelledby='home-tab')
       .row
         .col-md-8.offset-md-2
-          form(method='POST', action='/games')
+          form(method='POST', action='/games', id="create-game-1-form")
             input(type='hidden', name='_csrf', value=_csrf)
             .form-group.row
               label(class='col-md-2 col-form-label font-weight-bold', for='title') Game title:
               .col-md-10
-                input.form-control(type='text', name='title', id='title', autofocus=true, required=true)
+                input.form-control(type='text', name='title', id='title', placeholder='BSE Lucky spin', autofocus=true, required=true)
             .form-group.row
               label(class='col-md-2 col-form-label font-weight-bold', for='email') Prizes:
             .prizes-container
               .row.prize-row.mb-2
-                .col-md-7
+                .col-md-4
                   input.form-control(type='text', name='prizes[title][]', placeholder='Prize title', required=true)
                 .col-md-4
-                  input.form-control(type='text', name='prizes[percentage][]', placeholder='Prize win percentage', required=true)
-                .col-md-1
+                  input.form-control(type='number', min="1", name='prizes[percentage][]', placeholder='Prize win percentage', required=true)
+                .col-md-4
+                  input.form-control(type='number', min="1", name='prizes[quantity][]', placeholder='Prize quantity', required=true)
+                div.action-float-right
                   button.btn.btn-outline-danger.btn-remove-prize.text-center(type='button')
                     i.fa.fa-trash.mr-0
             .d-flex.justify-content-end
@@ -71,9 +73,31 @@ block scripts
       $(this).parent().parent().remove()
     })
 
+    $("#create-game-1-form").on('submit', function(e) {
+        e.preventDefault()
+
+        showInfo('Creating your game. Please wait...')
+        $.post({
+            url: '/games',
+            data: $(this).serialize(),
+            success: function(data) {
+              hideInfo()
+              showSuccess('Create game successfully!', 2000)
+            },
+            error: function(error) {
+              hideInfo()
+              showError('Something when wrong when create your game! Please try again!', 2000)
+            }
+        })
+    })
+
 block styles
   style.
     .row.prize-row:first-child .btn-remove-prize{
       display: none;
+    }
+    .action-float-right{
+      position: absolute;
+      right: -50px;
     }
   
