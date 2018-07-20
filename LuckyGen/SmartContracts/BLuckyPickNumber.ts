@@ -121,6 +121,7 @@ class BLuckyPickNumber {
         this.gameSize = this.gameSize + 1;
         currentBusiness.gameIdList.push(newGame.gameId);
         this.businessMap.put(currentBusiness.businessId, currentBusiness);
+        return JSON.stringify({gameId: newGame.gameId});
     }
 
     addNewPlayerToGame(gameId, playerText) {
@@ -151,6 +152,7 @@ class BLuckyPickNumber {
             throw new Error(ErrorMessages.PLAYER_EXIST);
         }
         this.gameMap.put(currentGame.gameId, currentGame);
+        return JSON.stringify({playerId: tmpPlayer.playerId});
     }
 
     _getRandomInt(min, max) {
