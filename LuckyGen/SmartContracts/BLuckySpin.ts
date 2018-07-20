@@ -25,9 +25,51 @@ const ErrorMessages = {
     GAME_INVALID: "game isn't exist.",
     PRIZE_STRUCTURE_INVALID: "prize structure is invalid.",
     BUSINESS_ADDRESS_INVALID: "businessAddress isn't exist.",
+    PLAYER_ADDRESS_INVALID: "playerAddress isn't exist.",
     GAME_FINISHED: "game is finished.",
     PLAYER_EXIST: "player is exist.",
     PLAYER_INVALID: "player isn't exist."
+}
+
+const Validator = {
+    checkValidGame: function(currentGame) {
+        if( ! currentGame) {
+            throw new Error(ErrorMessages.GAME_INVALID);
+        }
+    },
+    checkBusinessAddress: function(businessAddress) {
+        if(Blockchain.transaction.from !== businessAddress) {
+            throw new Error(ErrorMessages.BUSINESS_ADDRESS_INVALID);
+        }
+    },
+    checkPlayerAddress: function(playerAddress) {
+        if(Blockchain.transaction.from !== playerAddress) {
+            throw new Error(ErrorMessages.PLAYER_ADDRESS_INVALID);
+        }
+    },
+    checkGameFinished: function(currentGame) {
+        if(currentGame.isFinished) {
+            throw new Error(ErrorMessages.GAME_FINISHED);
+        }
+    },
+    checkMasterAddress: function(masterAddress) {
+        if(Blockchain.transaction.from !== masterAddress) {
+            throw new Error(ErrorMessages.MASTER_ADDRESS_INVALID);
+        }
+    },
+    checkPrizeStructure: function(prizeStructure) {
+        var totalPercent = 0;
+        for(var i = 0; i < prizeStructure.length; i++) {
+            if(prizeStructure[i].prizePercentage <= 0 || prizeStructure[i].prizePercentage >= 100) {
+                throw new Error(ErrorMessages.PRIZE_STRUCTURE_INVALID);
+            } else {
+                totalPercent = totalPercent + prizeStructure[i].prizePercentage;
+            }
+        }
+        if(totalPercent > 100) {
+            throw new Error(ErrorMessages.PRIZE_STRUCTURE_INVALID);
+        }
+    }
 }
 
 class Business {
@@ -72,19 +114,6 @@ class Game {
             this.winners = [];
         }
     }
-
-    public isValidPrizeStructure() {
-        var totalPercent = 0;
-        for(var i = 0; i < this.prizeStructure.length; i++) {
-            if(this.prizeStructure[i].prizePercentage <= 0 || this.prizeStructure[i].prizePercentage >= 100) {
-                return false;
-            } else {
-                totalPercent = totalPercent + this.prizeStructure[i].prizePercentage;
-            }
-        }
-        
-        return (totalPercent <= 100);
-    }
 }
 
 class Player {
@@ -127,9 +156,7 @@ class BLuckySpin {
     }
 
     addNewGameToBusiness(businessId, gameText) {
-        if(Blockchain.transaction.from !== this.masterAddress) {
-            throw new Error(ErrorMessages.MASTER_ADDRESS_INVALID);
-        }
+        Validator.checkMasterAddress(this.masterAddress);
         var currentBusiness = this.businessMap.get(businessId);
         if( ! currentBusiness) {
             currentBusiness = new Business(businessId);
@@ -137,9 +164,7 @@ class BLuckySpin {
         }
 
         var newGame = new Game(this.gameSize + 1, gameText);
-        if( ! newGame.isValidPrizeStructure()) {
-            throw new Error(ErrorMessages.PRIZE_STRUCTURE_INVALID);
-        } 
+        Validator.checkPrizeStructure(newGame.prizeStructure);
 
         this.gameMap.put(newGame.gameId, newGame);
         this.gameSize = this.gameSize + 1;
@@ -150,17 +175,11 @@ class BLuckySpin {
 
     addNewPlayerToGame(gameId, playerText) {
         var currentGame = this.gameMap.get(gameId);
-        if( ! currentGame) {
-            throw new Error(ErrorMessages.GAME_INVALID);
-        }
-        if(Blockchain.transaction.from !== currentGame.businessAddress) {
-            throw new Error(ErrorMessages.BUSINESS_ADDRESS_INVALID);
-        }
-        var tmpPlayer = new Player(playerText);
-        if(currentGame.isFinished) {
-            throw new Error(ErrorMessages.GAME_FINISHED);
-        }
+        Validator.checkValidGame(currentGame);
+        Validator.checkBusinessAddress(currentGame.businessAddress);
+        Validator.checkGameFinished(currentGame);
 
+        var tmpPlayer = new Player(playerText);
         var tmpPlayerIndex = currentGame.playerList.findIndex(p => p.playerId === tmpPlayer.playerId || p.playerAddress === tmpPlayer.playerAddress);
         if(tmpPlayerIndex === -1) {
             currentGame.playerList.push(tmpPlayer);
@@ -173,17 +192,9 @@ class BLuckySpin {
 
     updateSpinNumber(gameId, playerId, spinNumberOf) {
         var currentGame = this.gameMap.get(gameId);
-        if( ! currentGame) {
-            throw new Error(ErrorMessages.GAME_INVALID);
-        }
-
-        if(currentGame.isFinished) {
-            throw new Error(ErrorMessages.GAME_FINISHED);
-        }
-
-        if(Blockchain.transaction.from !== currentGame.businessAddress) {
-            throw new Error(ErrorMessages.BUSINESS_ADDRESS_INVALID);
-        }
+        Validator.checkValidGame(currentGame);
+        Validator.checkBusinessAddress(currentGame.businessAddress);
+        Validator.checkGameFinished(currentGame);
 
         var tmpPlayerIndex = currentGame.playerList.findIndex(p => p.playerId === playerId);
         if(tmpPlayerIndex !== -1) {
@@ -198,16 +209,13 @@ class BLuckySpin {
         return Math.floor(Math.random() * 10000 + 1);
     }
 
-    spin(gameId, playerId) {
+    spin(gameId, playerId, playerAddress) {
         var result = -1;
         var currentGame = this.gameMap.get(gameId);
-        if( ! currentGame) {
-            throw new Error(ErrorMessages.GAME_INVALID);
-        }
-        if(currentGame.isFinished) {
-            throw new Error(ErrorMessages.GAME_FINISHED);
-        }
-        var tmpPlayerIndex = currentGame.playerList.findIndex(p => p.playerId === playerId);
+        Validator.checkValidGame(currentGame);
+        Validator.checkGameFinished(currentGame);
+        Validator.checkPlayerAddress(playerAddress);
+        var tmpPlayerIndex = currentGame.playerList.findIndex(p => p.playerId === playerId && p.playerAddress === playerAddress);
         if(tmpPlayerIndex === -1) {
             throw new Error(ErrorMessages.PLAYER_INVALID);
         }
@@ -251,18 +259,14 @@ class BLuckySpin {
 
     getPlayerById(gameId, playerId) {
         var currentGame = this.gameMap.get(gameId);
-        if( ! currentGame) {
-            throw new Error(ErrorMessages.GAME_INVALID);
-        }
+        Validator.checkValidGame(currentGame);
         var tmpPlayer = currentGame.playerList.find(p => p.playerId === playerId);
         return JSON.stringify(tmpPlayer);
     }
 
     getWinnersByGameId(gameId) {
         var currentGame = this.gameMap.get(gameId);
-        if( ! currentGame) {
-            throw new Error(ErrorMessages.GAME_INVALID);
-        }
+        Validator.checkValidGame(currentGame);
         return JSON.stringify(currentGame.winners);
     }
 
@@ -278,12 +282,9 @@ class BLuckySpin {
 
     stopGame(businessId, gameId) {
         var currentGame = this.gameMap.get(gameId);
-        if( ! currentGame) {
-            throw new Error(ErrorMessages.GAME_INVALID);
-        }
-        if(currentGame.isFinished) {
-            throw new Error(ErrorMessages.GAME_FINISHED);
-        }
+        Validator.checkValidGame(currentGame);
+        Validator.checkGameFinished(currentGame);
+
         var currentBusiness = this.businessMap.get(businessId);
         for(var i = 0; i < currentBusiness.gameIdList.length; i++) {
             if(currentBusiness.gameIdList[i] === gameId) {
@@ -327,23 +328,23 @@ class BLuckySpin {
     //     result = result + "          ";
     //     var playerText1 = this._createPlayerText("1", "anhnhoday19915", "n1JPesSsumXpnagcTdwBXUHNsa5GofeM4Ud", 1);
     //     result = result + " " + this.addNewPlayerToGame(1, playerText1);
-    //     result = result + "spin() result: " + this.spin(1, "1");
+    //     result = result + "spin() result: " + this.spin(1, "1", "n1JPesSsumXpnagcTdwBXUHNsa5GofeM4Ud");
     //     result = result + "          ";
     //     var playerText2 = this._createPlayerText("2", "anhnhoday19916", "n1bNsEaLp7wWRUNq81juZPJU7M6FNEUzhT4", 1);
     //     result = result + " " + this.addNewPlayerToGame(1, playerText2);
-    //     result = result + "spin() result: " + this.spin(1, "2");
+    //     result = result + "spin() result: " + this.spin(1, "2", "n1bNsEaLp7wWRUNq81juZPJU7M6FNEUzhT4");
     //     result = result + "          ";
     //     var playerText3 = this._createPlayerText("3", "anhnhoday19917", "n1QsAnLKpQBuxVv1GdQxQxbh1zeZyPmAmws", 1);
     //     result = result + " " + this.addNewPlayerToGame(1, playerText3);
-    //     result = result + "spin() result: " + this.spin(1, "3");
+    //     result = result + "spin() result: " + this.spin(1, "3", "n1QsAnLKpQBuxVv1GdQxQxbh1zeZyPmAmws");
     //     result = result + "          ";
     //     var playerText4 = this._createPlayerText("4", "anhnhoday19918", "n1VGRKhLC9PY7r9bqEoVjmH86FbrFfsgK6S", 1);
     //     result = result + " " + this.addNewPlayerToGame(1, playerText4);
-    //     result = result + "spin() result: " + this.spin(1, "4");
+    //     result = result + "spin() result: " + this.spin(1, "4", "n1VGRKhLC9PY7r9bqEoVjmH86FbrFfsgK6S");
     //     result = result + "          ";
     //     var playerText5 = this._createPlayerText("5", "anhnhoday19919", "n1HyMfzqqZwyz1euvZEaq7Z1MjqaQ8TkeAn", 1);
     //     result = result + " " + this.addNewPlayerToGame(1, playerText5);
-    //     result = result + "spin() result: " + this.spin(1, "5");
+    //     result = result + "spin() result: " + this.spin(1, "5", "n1HyMfzqqZwyz1euvZEaq7Z1MjqaQ8TkeAn");
     //     result = result + "          ";
     //     result = result + "          ";
     //     result = result + " " + this.getPlayerById(1, "2");
