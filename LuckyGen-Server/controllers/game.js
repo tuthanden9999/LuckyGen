@@ -8,6 +8,8 @@ const ejs = require('ejs')
 const gamePrototype1 = require('fs').readFileSync(__dirname + '/../game-generators/prototypes/game1.ejs', {
     encoding: 'utf-8'
 })
+
+const gameService = require('../contract-services').luckySpin
 /**
  * GET /
  * List all games.
@@ -47,6 +49,37 @@ exports.preview = (req, res, err) => {
             title: 'Preview game',
             game
         });
+    })
+};
+
+
+/**
+ * Store /:game-id/players
+ * Game page.
+ */
+exports.storeNewPlayer = (req, res, err) => {
+    req.assert('player_id', 'Player ID is required')
+    req.assert('turns', 'Turns is required')
+
+    const errors = req.validationErrors();
+
+    if (errors) {
+        return res.status(400).send(errors);
+    }
+
+    Game.findOne({
+        _id: req.params.id
+    }, function(err, game) {
+        if (err) return res.status(404).send()
+        if (game._user !== req.user._id) return res.status(403).send()
+
+        const { player_id, turns } = req.body
+
+        gameService.addNewPlayerToGame(game._id, player_id, turns).then(result => {
+            res.send(result)
+        }).catch(err => {
+            res.send(err)
+        })
     })
 };
 /**

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+  </head>
+  <body>
+    <h1><%= title %></h1>
+    <p>Demo Client <%= title %></p>
+    <form method="post" action="/">
+	  <p>
+	    <label>Game ID:</label>
+	    <input type="text" name="game_id">
+	  </p>
+	  <p>
+	    <label>Player ID:</label>
+	    <input type="text" name="player_id">
+	  </p>
+	   <p>
+	    <label>Turn count:</label>
+	    <input type="text" name="turns">
+	  </p>
+	  <p>
+	    <input type="submit" value="Add new player">
+	  </p>
+</form>
+  </body>
+</html>
