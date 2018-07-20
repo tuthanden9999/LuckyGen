@@ -169,6 +169,28 @@ class BLuckySpin {
         this.gameMap.put(currentGame.gameId, currentGame);
     }
 
+    updateSpinNumber(gameId, playerId, spinNumberOf) {
+        var currentGame = this.gameMap.get(gameId);
+        if( ! currentGame) {
+            throw new Error(ErrorMessages.GAME_INVALID);
+        }
+
+        if(currentGame.isFinished) {
+            throw new Error(ErrorMessages.GAME_FINISHED);
+        }
+
+        if(Blockchain.transaction.from !== currentGame.businessAddress) {
+            throw new Error(ErrorMessages.BUSINESS_ADDRESS_INVALID);
+        }
+
+        var tmpPlayerIndex = currentGame.playerList.findIndex(p => p.playerId === playerId);
+        if(tmpPlayerIndex !== -1) {
+            currentGame.playerList[tmpPlayerIndex].spinNumberOf = spinNumberOf;
+        } else {
+        }
+        this.gameMap.put(currentGame.gameId, currentGame);
+    }
+
     _rand() {
         //Math.random.seed(Blockchain.block.seed + Blockchain.transaction.hash);
         return Math.floor(Math.random() * 10000 + 1);
