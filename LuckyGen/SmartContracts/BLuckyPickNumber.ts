@@ -186,7 +186,7 @@ class BLuckyPickNumber {
         var currentGame = this.gameMap.get(gameId);
         Validator.checkValidGame(currentGame);
         Validator.checkGameFinished(currentGame);
-        //Validator.checkPlayerAddress(playerAddress);
+        Validator.checkPlayerAddress(playerAddress);
 
         var tmpPlayerIndex = currentGame.playerList.findIndex(p => p.playerId === playerId && p.playerAddress === playerAddress);
         if(tmpPlayerIndex === -1) {
@@ -256,6 +256,13 @@ class BLuckyPickNumber {
         return currentGame.luckyNumbers.length;
     }
 
+    getPlayerById(gameId, playerId) {
+        var currentGame = this.gameMap.get(gameId);
+        Validator.checkValidGame(currentGame);
+        var tmpPlayer = currentGame.playerList.find(p => p.playerId === playerId);
+        return JSON.stringify(tmpPlayer);
+    }
+
     getWinnersByGameId(gameId) {
         var currentGame = this.gameMap.get(gameId);
         Validator.checkValidGame(currentGame);
@@ -276,6 +283,7 @@ class BLuckyPickNumber {
         var currentGame = this.gameMap.get(gameId);
         Validator.checkValidGame(currentGame);
         Validator.checkGameFinished(currentGame);
+        
         var currentBusiness = this.businessMap.get(businessId);
         for(var i = 0; i < currentBusiness.gameIdList.length; i++) {
             if(currentBusiness.gameIdList[i] == gameId) {
