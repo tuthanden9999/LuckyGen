@@ -18,9 +18,46 @@ const ErrorMessages = {
     MASTER_ADDRESS_INVALID: "masterAddress isn't exist.",
     GAME_INVALID: "game isn't exist.",
     BUSINESS_ADDRESS_INVALID: "businessAddress isn't exist.",
+    PLAYER_ADDRESS_INVALID: "playerAddress isn't exist.",
+    PRIZE_STRUCTURE_INVALID: "prize structure is invalid.",
     GAME_FINISHED: "game is finished.",
     PLAYER_EXIST: "player is exist.",
     PLAYER_INVALID: "player isn't exist."
+}
+
+const Validator = {
+    checkValidGame: function(currentGame) {
+        if( ! currentGame) {
+            throw new Error(ErrorMessages.GAME_INVALID);
+        }
+    },
+    checkBusinessAddress: function(businessAddress) {
+        if(Blockchain.transaction.from !== businessAddress) {
+            throw new Error(ErrorMessages.BUSINESS_ADDRESS_INVALID);
+        }
+    },
+    checkPlayerAddress: function(playerAddress) {
+        if(Blockchain.transaction.from !== playerAddress) {
+            throw new Error(ErrorMessages.PLAYER_ADDRESS_INVALID);
+        }
+    },
+    checkGameFinished: function(currentGame) {
+        if(currentGame.isFinished) {
+            throw new Error(ErrorMessages.GAME_FINISHED);
+        }
+    },
+    checkMasterAddress: function(masterAddress) {
+        if(Blockchain.transaction.from !== masterAddress) {
+            throw new Error(ErrorMessages.MASTER_ADDRESS_INVALID);
+        }
+    },
+    checkPrizeStructure: function(prizeStructure) {
+        for(var i = 0; i < prizeStructure.length; i++) {
+            if(prizeStructure[i].prizeRemain === 0) {
+                throw new Error(ErrorMessages.PRIZE_STRUCTURE_INVALID);
+            }
+        }
+    }
 }
 
 class Business {
@@ -41,6 +78,7 @@ class Game {
     prizeStructure: PrizeStructure[];
     winners: WinnerStructure[];
     allPickedNumbers: number[];
+    luckyNumbers: number[];
 
     public constructor(gameId, text ? : string) {
         if(text) {
@@ -57,6 +95,7 @@ class Game {
             }
             this.winners = [];
             this.allPickedNumbers = [];
+            this.luckyNumbers = [];
         } else {
             this.gameId = 0;
             this.businessAddress = "";
@@ -66,6 +105,7 @@ class Game {
             this.prizeStructure = [];
             this.winners = [];
             this.allPickedNumbers = [];
+            this.luckyNumbers = [];
         }
     }
 }
@@ -81,9 +121,9 @@ class Player {
             this.playerId = playerObj.playerId;
             this.playerName = playerObj.playerName;
             this.playerAddress = playerObj.playerAddress;
-            this.pickedNumbers = playerObj.pickedNumbers;
+            this.pickedNumbers = [];
         } else {
-            this.playerId = 0;
+            this.playerId = "0";
             this.playerName = "";
             this.playerAddress = "";
             this.pickedNumbers = [];
@@ -107,9 +147,7 @@ class BLuckyPickNumber {
     }
 
     addNewGameToBusiness(businessId, gameText) {
-        if(Blockchain.transaction.from !== this.masterAddress) {
-            throw new Error(ErrorMessages.MASTER_ADDRESS_INVALID);
-        }
+        Validator.checkMasterAddress(this.masterAddress);
         var currentBusiness = this.businessMap.get(businessId);
         if( ! currentBusiness) {
             currentBusiness = new Business(businessId);
@@ -117,6 +155,9 @@ class BLuckyPickNumber {
         }
 
         var newGame = new Game(this.gameSize + 1, gameText);
+        Validator.checkValidGame(newGame);
+        Validator.checkPrizeStructure(newGame.prizeStructure);
+
         this.gameMap.put(newGame.gameId, newGame);
         this.gameSize = this.gameSize + 1;
         currentBusiness.gameIdList.push(newGame.gameId);
@@ -126,20 +167,33 @@ class BLuckyPickNumber {
 
     addNewPlayerToGame(gameId, playerText) {
         var currentGame = this.gameMap.get(gameId);
-        if( ! currentGame) {
-            throw new Error(ErrorMessages.GAME_INVALID);
-        }
-        if(Blockchain.transaction.from !== currentGame.businessAddress) {
-            throw new Error(ErrorMessages.BUSINESS_ADDRESS_INVALID);
-        }
-        var tmpPlayer = new Player(playerText);
-        if(currentGame.isFinished) {
-            throw new Error(ErrorMessages.GAME_FINISHED);
-        }
+        Validator.checkValidGame(currentGame);
+        Validator.checkBusinessAddress(currentGame.businessAddress);
+        Validator.checkGameFinished(currentGame);
 
+        var tmpPlayer = new Player(playerText);
         var tmpPlayerIndex = currentGame.playerList.findIndex(p => p.playerId === tmpPlayer.playerId || p.playerAddress === tmpPlayer.playerAddress);
         if(tmpPlayerIndex === -1) {
             currentGame.playerList.push(tmpPlayer);
+        } else {
+            throw new Error(ErrorMessages.PLAYER_EXIST);
+        }
+        this.gameMap.put(currentGame.gameId, currentGame);
+        return JSON.stringify({playerId: tmpPlayer.playerId});
+    }
+
+    updatePickNumbersOfPlayer(gameId, playerId, playerAddress, pickedNumbers) {
+        var currentGame = this.gameMap.get(gameId);
+        Validator.checkValidGame(currentGame);
+        Validator.checkGameFinished(currentGame);
+        //Validator.checkPlayerAddress(playerAddress);
+
+        var tmpPlayerIndex = currentGame.playerList.findIndex(p => p.playerId === playerId && p.playerAddress === playerAddress);
+        if(tmpPlayerIndex === -1) {
+            throw new Error(ErrorMessages.PLAYER_INVALID);
+        } else {
+            currentGame.playerList[tmpPlayerIndex].pickedNumbers = pickedNumbers;
+            var tmpPlayer = currentGame.playerList[tmpPlayerIndex];
             for(var i = 0; i < tmpPlayer.pickedNumbers.length; i++) {
                 var tmpPickedNumber = tmpPlayer.pickedNumbers[i];
                 if(currentGame.allPickedNumbers.includes(tmpPickedNumber)) {
@@ -148,11 +202,9 @@ class BLuckyPickNumber {
                     currentGame.allPickedNumbers.push(tmpPickedNumber);
                 }
             }
-        } else {
-            throw new Error(ErrorMessages.PLAYER_EXIST);
         }
         this.gameMap.put(currentGame.gameId, currentGame);
-        return JSON.stringify({playerId: tmpPlayer.playerId});
+        return JSON.stringify({playerId: currentGame.playerList[tmpPlayerIndex].playerId});
     }
 
     _getRandomInt(min, max) {
@@ -162,18 +214,9 @@ class BLuckyPickNumber {
 
     pickLuckyNumbers(gameId) {
         var currentGame = this.gameMap.get(gameId);
-        if( ! currentGame) {
-            throw new Error(ErrorMessages.GAME_INVALID);
-        }
-
-        if(Blockchain.transaction.from !== currentGame.businessAddress) {
-            throw new Error(ErrorMessages.BUSINESS_ADDRESS_INVALID);
-        }
-        var luckyNumbers: number[] = [];
-
-        if(currentGame.isFinished) {
-            throw new Error(ErrorMessages.GAME_FINISHED);
-        }
+        Validator.checkValidGame(currentGame);
+        Validator.checkGameFinished(currentGame);
+        Validator.checkBusinessAddress(currentGame.businessAddress);
 
         var totalPrize = 0;
         var i = 0;
@@ -187,8 +230,8 @@ class BLuckyPickNumber {
                 var luckyNumberInd = this._getRandomInt(0, currentGame.allPickedNumbers.length - 1);
                 var luckyNumber = currentGame.allPickedNumbers[luckyNumberInd];
             }
-            while(luckyNumbers.includes(luckyNumber));
-            luckyNumbers.push(luckyNumber);
+            while(currentGame.luckyNumbers.includes(luckyNumber));
+            currentGame.luckyNumbers.push(luckyNumber);
             
             for(var j = 0; j < currentGame.playerList.length; j++) {
                 if(currentGame.playerList[j].pickedNumbers.includes(luckyNumber)) {
@@ -208,15 +251,14 @@ class BLuckyPickNumber {
             }
         }
 
+        currentGame.isFinished = true;
         this.gameMap.put(currentGame.gameId, currentGame);
-        return luckyNumbers;
+        return currentGame.luckyNumbers.length;
     }
 
     getWinnersByGameId(gameId) {
         var currentGame = this.gameMap.get(gameId);
-        if( ! currentGame) {
-            throw new Error(ErrorMessages.GAME_INVALID);
-        }
+        Validator.checkValidGame(currentGame);
         return JSON.stringify(currentGame.winners);
     }
 
@@ -232,12 +274,8 @@ class BLuckyPickNumber {
 
     stopGame(businessId, gameId) {
         var currentGame = this.gameMap.get(gameId);
-        if( ! currentGame) {
-            throw new Error(ErrorMessages.GAME_INVALID);
-        }
-        if(currentGame.isFinished) {
-            throw new Error(ErrorMessages.GAME_FINISHED);
-        }
+        Validator.checkValidGame(currentGame);
+        Validator.checkGameFinished(currentGame);
         var currentBusiness = this.businessMap.get(businessId);
         for(var i = 0; i < currentBusiness.gameIdList.length; i++) {
             if(currentBusiness.gameIdList[i] == gameId) {
@@ -248,12 +286,11 @@ class BLuckyPickNumber {
         }
     }
 
-    // _createPlayerText(playerId, playerName, playerAddress, pickedNumbers) {
+    // _createPlayerText(playerId, playerName, playerAddress) {
     //     var player = {}
     //     player.playerId = playerId;
     //     player.playerName = playerName;
     //     player.playerAddress = playerAddress;
-    //     player.pickedNumbers = pickedNumbers;
     //     return JSON.stringify(player);
     // }
 
@@ -276,20 +313,25 @@ class BLuckyPickNumber {
     //     gameText.prizeStructure.push(this._createPrizeStructure("The third", 1));
     //     result = result + " " + this.addNewGameToBusiness("1", JSON.stringify(gameText));
     //     result = result + "          ";
-    //     var playerText1 = this._createPlayerText("1", "anhnhoday19915", "n1JPesSsumXpnagcTdwBXUHNsa5GofeM4Ud", [13, 23, 15]);
+    //     var playerText1 = this._createPlayerText("1", "anhnhoday19915", "n1JPesSsumXpnagcTdwBXUHNsa5GofeM4Ud");
     //     result = result + this.addNewPlayerToGame(1, playerText1);
+    //     result = result + this.updatePickNumbersOfPlayer(1, "1", "n1JPesSsumXpnagcTdwBXUHNsa5GofeM4Ud", [13, 23, 15]);
     //     result = result + "          ";
-    //     var playerText2 = this._createPlayerText("2", "anhnhoday19916", "n1bNsEaLp7wWRUNq81juZPJU7M6FNEUzhT4", [10, 2]);
+    //     var playerText2 = this._createPlayerText("2", "anhnhoday19916", "n1bNsEaLp7wWRUNq81juZPJU7M6FNEUzhT4");
     //     result = result + this.addNewPlayerToGame(1, playerText2);
+    //     result = result + this.updatePickNumbersOfPlayer(1, "2", "n1bNsEaLp7wWRUNq81juZPJU7M6FNEUzhT4", [10, 2]);
     //     result = result + "          ";
-    //     var playerText3 = this._createPlayerText("3", "anhnhoday19917", "n1QsAnLKpQBuxVv1GdQxQxbh1zeZyPmAmws", [1, 5, 15]);
+    //     var playerText3 = this._createPlayerText("3", "anhnhoday19917", "n1QsAnLKpQBuxVv1GdQxQxbh1zeZyPmAmws");
     //     result = result + this.addNewPlayerToGame(1, playerText3);
+    //     result = result + this.updatePickNumbersOfPlayer(1, "3", "n1QsAnLKpQBuxVv1GdQxQxbh1zeZyPmAmws", [1, 5, 15]);
     //     result = result + "          ";
-    //     var playerText4 = this._createPlayerText("4", "anhnhoday19918", "n1VGRKhLC9PY7r9bqEoVjmH86FbrFfsgK6S", [5]);
+    //     var playerText4 = this._createPlayerText("4", "anhnhoday19918", "n1VGRKhLC9PY7r9bqEoVjmH86FbrFfsgK6S");
     //     result = result + this.addNewPlayerToGame(1, playerText4);
+    //     result = result + this.updatePickNumbersOfPlayer(1, "4", "n1VGRKhLC9PY7r9bqEoVjmH86FbrFfsgK6S", [5]);
     //     result = result + "          ";
-    //     var playerText5 = this._createPlayerText("5", "anhnhoday19919", "n1HyMfzqqZwyz1euvZEaq7Z1MjqaQ8TkeAn", [15, 16, 17]);
+    //     var playerText5 = this._createPlayerText("5", "anhnhoday19919", "n1HyMfzqqZwyz1euvZEaq7Z1MjqaQ8TkeAn");
     //     result = result + this.addNewPlayerToGame(1, playerText5);
+    //     result = result + this.updatePickNumbersOfPlayer(1, "5", "n1HyMfzqqZwyz1euvZEaq7Z1MjqaQ8TkeAn", [15, 16, 17]);
     //     result = result + "          ";
     //     result = result + " " + this.pickLuckyNumbers(1);
     //     result = result + "          ";
@@ -298,8 +340,6 @@ class BLuckyPickNumber {
     //     result = result + " " + this.getGameHistoryByBusinessId("1");
     //     result = result + "          ";
     //     result = result + " " + this.getGameResultByGameId(1);
-    //     result = result + "          ";
-    //     result = result + " " + this.stopGame("1", 1);
     //     return result;
     // }
 }
