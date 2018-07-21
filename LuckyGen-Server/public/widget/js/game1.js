@@ -246,12 +246,12 @@ var wheelSpinning = false;
 function startSpin(prize) {
     var stopAt = ((360 / wheelGame.theWheel.numSegments) * (prize - 1)) + 1 + Math.floor((Math.random() * ((360 / wheelGame.theWheel.numSegments) - 2)));
     wheelGame.theWheel.animation.stopAngle = stopAt;
-    if (wheelSpinning == false) {
+    // if (wheelSpinning == false) {
         document.getElementById('spin_button').src = "https://rawgit.com/tuthanden9999/LuckyGen/master/LuckyGen/LuckySpin/image/spin_off.png";
         document.getElementById('spin_button').className = "";
         wheelGame.theWheel.startAnimation();
         wheelSpinning = true;
-    }
+    // }
 }
 
 function resetWheel() {
