@@ -21,6 +21,8 @@
         else
           li.nav-item(class=(title === 'Account Management') ? 'active' : undefined)
             a.nav-link(href='/account') My Account
+          li.nav-item(class=(title === 'Enterprise Management') ? 'active' : undefined)
+            a.nav-link(href='/admin') Manage enterprises
           li.dropdown(class=(title === 'Account Management') ? 'active' : undefined).nav-item
             a.dropdown-toggle.nav-link(href='#', data-toggle='dropdown')
               if user.profile.picture
