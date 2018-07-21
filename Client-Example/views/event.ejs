@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Event client DEMO</title>
+</head>
+<body>
+	<div id="game-container"></div>
+      
+	<script id="handle-script-id" src="http://localhost:8080/widget/js/game1.js"></script>
+	<script>
+		initSpin({
+			game_id: 16,
+			player_id: "<%= playerID %>",
+			submit_url: 'https://my-submit-url',
+			contract_address: 'n1tokg7LW6tbKhRr3FfHLJ8XksxGhjYQk2B'
+		})
+	</script>
+</body>
+</html>

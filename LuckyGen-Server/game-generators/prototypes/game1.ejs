@@ -2,5 +2,10 @@
       
 <script id="handle-script-id" src="<%= ASSET_HOST %>/widget/js/game1.js"></script>
 <script>
-    initSpin(<%= GAME_ID %>, 2, 'https://my-submit-url')
+	initSpin({
+		game_id: <%= GAME_ID %>,
+		player_id: 2,
+		submit_url: 'https://my-submit-url',
+		contract_address: '<%= SMART_CONSTRACT_ADDR %>'
+	})
 </script>

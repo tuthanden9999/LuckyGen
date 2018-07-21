@@ -4,6 +4,8 @@ const {
 const passport = require('passport')
 const Game = require('../models/Game')
 const User = require('../models/User')
+const Wallet = require('../models/Wallet')
+const SMART_CONSTRACT_ADDR = require('../config/net').SMART_CONSTRACT_ADDR
 const ejs = require('ejs')
 const gamePrototype1 = require('fs').readFileSync(__dirname + '/../game-generators/prototypes/game1.ejs', {
     encoding: 'utf-8'
@@ -70,10 +72,11 @@ exports.storeNewPlayer = (req, res, err) => {
     }
 
     Game.findOne({
-        _id: req.params.id
+        idNet: req.params.id
     }, function(err, game) {
         if (err) return res.status(404).send()
-        if (game._user !== req.user._id) return res.status(403).send()
+            
+        if (!game._user.equals(req.user._id)) return res.status(403).send()
 
         const { player_id, player_address, player_name, turns } = req.body
 
@@ -83,7 +86,7 @@ exports.storeNewPlayer = (req, res, err) => {
                 return res.status(500).json({message: 'Add player to game failed!'})
             }
 
-            res.send(result)
+            return res.send(result)
         })
     })
 };
@@ -91,13 +94,25 @@ exports.storeNewPlayer = (req, res, err) => {
  * Post /
  * Process create new game.
  */
-exports.store = (req, res, next) => {
+exports.store = async (req, res, next) => {
 	req.assert('title', 'Please enter game\'s title')
+
+    const errors = req.validationErrors();
+
+    if (errors) {
+        return res.status(400).send(errors);
+    }
 
     const game = new Game({
         _user: req.user._id,
         title: req.body.title,
     })
+
+    const wallet = await Wallet.findById(req.user.wallets.pop())
+
+    if (!wallet) {
+        return res.status(500).send('Business does not have a wallet!')
+    }
 
     game.save(function(err) {
     	if (err) {
@@ -105,29 +120,23 @@ exports.store = (req, res, next) => {
             return res.redirect('back')
         }
 
+        const prizes = parseObjectOfArray(req.body.prizes)
+
         const game_config = {
-            businessAddress: 'my-business-address',
-            prizeStructure: [
-                {
+            businessAddress: wallet.getAddress(),
+            prizeStructure: prizes.map((p, index) => {
+                return {
                     prize: {
-                        prizeId: 1,
-                        prizeName: 'Giai thuong 1'
+                        prizeId: index,
+                        prizeName: p.title
                     },
-                    prizePercentage: 50,
-                    prizeNumberOf: 3,
-                    prizeRemain: 3,
-                },
-                {
-                    prize: {
-                        prizeId: 2,
-                        prizeName: 'Giai thuong 2'
-                    },
-                    prizePercentage: 40,
-                    prizeNumberOf: 5,
-                    prizeRemain: 5
+                    prizePercentage: parseInt(p.percentage),
+                    prizeNumberOf: parseInt(p.quantity),
                 }
-            ]
+            }),
         }
+
+        console.log("GAME CONFIG IS: ", game_config)
 
         gameService.addNewGameToBusiness({ business_id: 1, game_config }, (err, result) => {
             if (err) {
@@ -136,8 +145,9 @@ exports.store = (req, res, next) => {
                 return res.status(500).send(err)
             }
 
+            var gameResult
             try {
-                const gameResult = JSON.parse(JSON.parse(result))
+                gameResult = JSON.parse(JSON.parse(result))
             } catch (err) {
                 console.log('Error when parse addNewGameToBusiness result from net', result , {err})
                 return res.status(500).send(err)
@@ -145,20 +155,28 @@ exports.store = (req, res, next) => {
 
             const html = ejs.render(gamePrototype1, {
                 ASSET_HOST: 'http://localhost:8080',
-                GAME_ID: gameResult.gameId
+                GAME_ID: gameResult.gameId,
+                SMART_CONSTRACT_ADDR,
             })
 
+            console.log({gameResult})
+
             game.widget = html
+            game.idNet = gameResult.gameId
             game.save()
+
+            console.log('Game saved')
+
+            Game.findOne({_id: game._id}, function(e, g) { console.log(g) })
             
             User.update({ _id: req.user._id }, { $push: { games: game._id }}, function(error) {
                 if (error) {
-                    req.flash('errors', err);
+                    return res.status(500).send(err);
                 } else {
-                    req.flash('success', { msg: 'Create game successfully!' });
+                    return res.status(200).json({
+                        'message': 'Create game successfully!'
+                    })
                 }
-
-                res.redirect('back')
             })
         })    	
     })

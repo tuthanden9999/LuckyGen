@@ -26,11 +26,18 @@ class Client {
 	 *
 	 * @return {number} Player turn left
 	 */
-	addNewPlayer(gameID: number, playerID: string, playerAddr: string, turns: number = 1) {
-		return this.httpClient.post(`games/${gameID}/players`, {
-			player_addr: playerAddr,
+	addNewPlayer(gameID: number, playerID: string, playerName: string, playerAddr: string, turns: number = 1) {
+		console.log({
+			player_address: playerAddr,
+			player_name: playerName,
 			player_id: playerID,
-			turns: 1
+			turns
+		})
+		return this.httpClient.post(`games/${gameID}/players`, {
+			player_address: playerAddr,
+			player_name: playerName,
+			player_id: playerID,
+			turns
 		}).then(data => data.data)
 	}
 

@@ -21,6 +21,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use('/event', function(req, res){
+	return res.render('event', { playerID: 1 });
+});
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
