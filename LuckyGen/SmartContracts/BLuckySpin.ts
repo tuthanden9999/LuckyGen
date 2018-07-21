@@ -18,6 +18,7 @@ interface WinnerStructure {
 interface PlayerHistoryStructure {
     turn: number;
     prize: Prize;
+    timestamp: number;
 }
 
 const ErrorMessages = {
@@ -225,19 +226,20 @@ class BLuckySpin {
             for(var i = 0; i < currentGame.prizeStructure.length; i++) {
                 currentPointToWin = currentPointToWin + currentGame.prizeStructure[i].prizePercentage * 100;
                 if(randNumber <= currentPointToWin && currentGame.prizeStructure[i].prizeRemain > 0) {
+                    //update history of player
+                    var newHistoryPiece = {};
+                    newHistoryPiece.turn = currentGame.playerList[tmpPlayerIndex].history.length;
+                    newHistoryPiece.prize = currentGame.prizeStructure[i].prize;
+                    newHistoryPiece.timestamp = Date.now();
+                    currentGame.playerList[tmpPlayerIndex].history.push(newHistoryPiece);
+                    isWin = true;
+
                     var newWinner = {};
                     newWinner.player = currentGame.playerList[tmpPlayerIndex];
                     newWinner.prize = currentGame.prizeStructure[i].prize;
                     currentGame.prizeStructure[i].prizeRemain = currentGame.prizeStructure[i].prizeRemain - 1;
                     currentGame.winners.push(newWinner);
                     result = i + 1;
-
-                    //update history of player
-                    var newHistoryPiece = {};
-                    newHistoryPiece.turn = currentGame.playerList[tmpPlayerIndex].history.length;
-                    newHistoryPiece.prize = currentGame.prizeStructure[i].prize;
-                    currentGame.playerList[tmpPlayerIndex].history.push(newHistoryPiece);
-                    isWin = true;
                     break;
                 }
             }
@@ -246,6 +248,7 @@ class BLuckySpin {
                 var newHistoryPiece = {};
                 newHistoryPiece.turn = currentGame.playerList[tmpPlayerIndex].history.length;
                 newHistoryPiece.prize = {};
+                newHistoryPiece.timestamp = Date.now();
                 currentGame.playerList[tmpPlayerIndex].history.push(newHistoryPiece);
             }
             this.gameMap.put(currentGame.gameId, currentGame);
