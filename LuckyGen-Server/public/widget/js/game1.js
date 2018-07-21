@@ -1,14 +1,17 @@
 const html = `
-<div align="center" id="lucky-spin-div-id" style="background-color: rgb(186, 238, 206);">
+<div align="center" id="lucky-spin-div-id">
     <div class="lucky-spin-indicator" style="font-size: 20px; height: 100%;">Initializing game. Please wait...</div>
     <table class="lucky-spin-main" border="0" cellpadding="0" cellspacing="0" style="display: none">
         <tbody>
             <tr>
-                Your Address:
-                <input id="address" name="fname" placeholder="Your nebulas address" style="width:400;text-align:center " type="text">
-                    <input id="submit" onclick="submit();" type="submit" value="Submit">
-                    </input>
-                </input>
+                <div class="lgx-subscribe-form">
+                    <div class="form-group form-group-email">
+                        <input type="text" name="fname" id="address" placeholder="Your nebulas address" class="form-control lgx-input-form form-control">
+                    </div>
+                    <div class="form-group form-group-submit">
+                        <button type="button" onclick="submit();" name="lgx-submit" id="submit" class="lgx-btn lgx-submit"><span>Submit</span></button>
+                    </div>
+                </div>
             </tr>
             <tr>
                 <td>
@@ -40,7 +43,7 @@ const html = `
     </table>
 </div>
 `
-const JS_DEPENDENCIES = ["https://rawgit.com/tuthanden9999/LuckyGen/master/LuckyGen/LuckySpin/js/Winwheel.js", "http://cdnjs.cloudflare.com/ajax/libs/gsap/latest/TweenMax.min.js", "http://localhost:8080/widget/js/nebPay.js", "http://localhost:8080/widget/js/nebulas.js", "https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"]
+const JS_DEPENDENCIES = ["https://rawgit.com/tuthanden9999/LuckyGen/master/LuckyGen/LuckySpin/js/Winwheel.js", "http://cdnjs.cloudflare.com/ajax/libs/gsap/latest/TweenMax.min.js", "http://localhost:8080/widget/js/nebPay.js", "http://localhost:8080/widget/js/nebulas.js"]
 const CSS_DEPENDENCIES = ['https://rawgit.com/tuthanden9999/LuckyGen/master/LuckyGen/LuckySpin/css/lucky-spin.css']
 window.wheelGame = {
     gameId: null,
