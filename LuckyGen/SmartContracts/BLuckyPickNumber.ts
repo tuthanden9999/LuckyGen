@@ -18,7 +18,6 @@ const ErrorMessages = {
     MASTER_ADDRESS_INVALID: "masterAddress isn't exist.",
     GAME_INVALID: "game isn't exist.",
     BUSINESS_ADDRESS_INVALID: "businessAddress isn't exist.",
-    PLAYER_ADDRESS_INVALID: "playerAddress isn't exist.",
     PRIZE_STRUCTURE_INVALID: "prize structure is invalid.",
     GAME_FINISHED: "game is finished.",
     PLAYER_EXIST: "player is exist.",
@@ -34,11 +33,6 @@ const Validator = {
     checkBusinessAddress: function(businessAddress) {
         if(Blockchain.transaction.from !== businessAddress) {
             throw new Error(ErrorMessages.BUSINESS_ADDRESS_INVALID);
-        }
-    },
-    checkPlayerAddress: function(playerAddress) {
-        if(Blockchain.transaction.from !== playerAddress) {
-            throw new Error(ErrorMessages.PLAYER_ADDRESS_INVALID);
         }
     },
     checkGameFinished: function(currentGame) {
@@ -182,13 +176,13 @@ class BLuckyPickNumber {
         return JSON.stringify({playerId: tmpPlayer.playerId});
     }
 
-    updatePickNumbersOfPlayer(gameId, playerId, playerAddress, pickedNumbers) {
+    updatePickNumbersOfPlayer(gameId, playerId, pickedNumbers) {
         var currentGame = this.gameMap.get(gameId);
         Validator.checkValidGame(currentGame);
         Validator.checkGameFinished(currentGame);
-        Validator.checkPlayerAddress(playerAddress);
 
-        var tmpPlayerIndex = currentGame.playerList.findIndex(p => p.playerId === playerId && p.playerAddress === playerAddress);
+        var tmpPlayerIndex = currentGame.playerList.findIndex(p => p.playerId === playerId && p.playerAddress === Blockchain.transaction.from);
+        //var tmpPlayerIndex = currentGame.playerList.findIndex(p => p.playerId === playerId);
         if(tmpPlayerIndex === -1) {
             throw new Error(ErrorMessages.PLAYER_INVALID);
         } else {
@@ -323,23 +317,23 @@ class BLuckyPickNumber {
     //     result = result + "          ";
     //     var playerText1 = this._createPlayerText("1", "anhnhoday19915", "n1JPesSsumXpnagcTdwBXUHNsa5GofeM4Ud");
     //     result = result + this.addNewPlayerToGame(1, playerText1);
-    //     result = result + this.updatePickNumbersOfPlayer(1, "1", "n1JPesSsumXpnagcTdwBXUHNsa5GofeM4Ud", [13, 23, 15]);
+    //     result = result + this.updatePickNumbersOfPlayer(1, "1", [13, 23, 15]);
     //     result = result + "          ";
     //     var playerText2 = this._createPlayerText("2", "anhnhoday19916", "n1bNsEaLp7wWRUNq81juZPJU7M6FNEUzhT4");
     //     result = result + this.addNewPlayerToGame(1, playerText2);
-    //     result = result + this.updatePickNumbersOfPlayer(1, "2", "n1bNsEaLp7wWRUNq81juZPJU7M6FNEUzhT4", [10, 2]);
+    //     result = result + this.updatePickNumbersOfPlayer(1, "2", [10, 2]);
     //     result = result + "          ";
     //     var playerText3 = this._createPlayerText("3", "anhnhoday19917", "n1QsAnLKpQBuxVv1GdQxQxbh1zeZyPmAmws");
     //     result = result + this.addNewPlayerToGame(1, playerText3);
-    //     result = result + this.updatePickNumbersOfPlayer(1, "3", "n1QsAnLKpQBuxVv1GdQxQxbh1zeZyPmAmws", [1, 5, 15]);
+    //     result = result + this.updatePickNumbersOfPlayer(1, "3", [1, 5, 15]);
     //     result = result + "          ";
     //     var playerText4 = this._createPlayerText("4", "anhnhoday19918", "n1VGRKhLC9PY7r9bqEoVjmH86FbrFfsgK6S");
     //     result = result + this.addNewPlayerToGame(1, playerText4);
-    //     result = result + this.updatePickNumbersOfPlayer(1, "4", "n1VGRKhLC9PY7r9bqEoVjmH86FbrFfsgK6S", [5]);
+    //     result = result + this.updatePickNumbersOfPlayer(1, "4", [5]);
     //     result = result + "          ";
     //     var playerText5 = this._createPlayerText("5", "anhnhoday19919", "n1HyMfzqqZwyz1euvZEaq7Z1MjqaQ8TkeAn");
     //     result = result + this.addNewPlayerToGame(1, playerText5);
-    //     result = result + this.updatePickNumbersOfPlayer(1, "5", "n1HyMfzqqZwyz1euvZEaq7Z1MjqaQ8TkeAn", [15, 16, 17]);
+    //     result = result + this.updatePickNumbersOfPlayer(1, "5", [15, 16, 17]);
     //     result = result + "          ";
     //     result = result + " " + this.pickLuckyNumbers(1);
     //     result = result + "          ";
