@@ -170,11 +170,8 @@ class BLuckySpin {
         this.gameSize = this.gameSize + 1;
         currentBusiness.gameIdList.push(newGame.gameId);
         this.businessMap.put(currentBusiness.businessId, currentBusiness);
-<<<<<<< HEAD
-        return JSON.stringify({gameId: newGame.gameId});
-=======
+
         return JSON.stringify({ gameId: newGame.gameId });
->>>>>>> Many improvent 2
     }
 
     addNewPlayerToGame(gameId, playerText) {
