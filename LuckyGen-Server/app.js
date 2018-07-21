@@ -128,6 +128,7 @@ app.use('/webfonts', express.static(path.join(__dirname, 'node_modules/@fortawes
  */
 app.get('/games/create', passportConfig.isAuthenticated, gameController.create);
 app.post('/api/games/:id/players', passport.authenticate('jwt'), passportConfig.isAuthenticated, gameController.storeNewPlayer);
+app.get('/api/games/:id/result', gameController.getResult);
 app.get('/games/:id/preview', gameController.preview);
 app.get('/games', passportConfig.isAuthenticated, gameController.index);
 app.post('/games', passportConfig.isAuthenticated, gameController.store);

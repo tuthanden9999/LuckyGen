@@ -54,6 +54,29 @@ exports.preview = (req, res, err) => {
     })
 };
 
+/**
+ * GET /:game-id/result
+ * Game page.
+ */
+exports.getResult = (req, res, err) => {
+    Game.findOne({
+        _id: req.params.id
+    }, function(err, game) {
+        if (err) return next(err)
+        
+        console.log("ID net is",  game.idNet)
+    
+        gameService.getHistory({game_id: game.idNet}, (err, result) => {
+            if (err) {
+                console.log({err})
+                return res.status(500).json({message: 'Get game history failed!'})
+            }
+
+            return res.send(result)
+        })
+    })
+};
+
 
 /**
  * Store /:game-id/players
