@@ -1,12 +1,5 @@
 extends ../layout
 
-block scripts
-  script(src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js")
-  script(src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js")
-  script.
-    hljs.initHighlightingOnLoad();
-    new ClipboardJS('.btn');
-
 block styles
   link(href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-dark.min.css", rel="stylesheet")
   style.
@@ -36,12 +29,14 @@ block content
                       i.fa.fa-clipboard.mr-0
                   nav
                     #nav-tab.nav.nav-tabs(role='tablist')
-                      a#nav-home-tab.nav-item.nav-link.active(data-toggle='tab', href='#nav-code-' + index, role='tab') 
+                      a#nav-home-tab.nav-item.nav-link.active(data-toggle='tab', href='#nav-result-' + index, role='tab')  | Result
+                      a#nav-home-tab.nav-item.nav-link(data-toggle='tab', href='#nav-code-' + index, role='tab') 
                         | Code
                       a#nav-profile-tab.nav-item.nav-link(data-toggle='tab', href='#nav-preview-' + index, role='tab')
                         | Preview
                   #nav-tabContent.tab-content
-                    .tab-pane.fade.show.active(role='tabpanel', id='nav-code-' + index)
+                    .tab-pane.fade.show.active.game-result-wrap(role='tabpanel', id='nav-result-' + index, data-game-id=game._id)
+                    .tab-pane.fade(role='tabpanel', id='nav-code-' + index)
                       pre
                         code.html
                           =game.widget
@@ -51,6 +46,63 @@ block content
                     
       else 
         span You don't have any game yet
+
+
+block scripts
+  script(src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js")
+  script(src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js")
+  script.
+    hljs.initHighlightingOnLoad();
+    new ClipboardJS('.btn');
+    $(document).ready(function(){
+      $('.game-result-wrap').each(function() {
+        $.get(`/api/games/${$(this).data('game-id')}/result`).then(result => {
+          $(this).html(renderPrizes(result))
+        })
+      })
+    })
+
+    function renderPrizes(prizes) {
+      return `
+        <div class="prize">
+          <table>
+            <thead>
+              <th style="width: 25%;">Prize title</td>
+              <th style="width: 15%;">Prize percentage</td>
+              <th style="width: 15%;">Prize quantity</td>
+              <th>Won players</td>
+            </thead>
+            <tbody>
+              ${prizes.map(prize => {
+                return `
+                  <tr>
+                    <td>${prize.prizeName}</td>
+                    <td>${prize.prizePercentage}%</td>
+                    <td>${prize.prizeRemain} / ${prize.prizeNumberOf}</td>
+                    <td>
+                      <b>Total: ${prize.players.length}</b>
+                      <ul>
+                        ${prize.players.map((p, index) => {
+                          return `
+                            <ul>
+                              <li>Name: ${p.playerName}</li>
+                              <li>Address: ${p.playerAddress}</li>
+                              <li>Id: ${p.playerId}</li>
+                            </ul>
+                            <hr />
+                          `
+                        })}
+                      </ul>
+                    </td>
+                  <tr>
+                `
+              })}
+            </tbody>
+          </table>
+        </div>
+      `
+    }
+    
 
 
   

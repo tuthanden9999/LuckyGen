@@ -4,40 +4,70 @@ const Game = require('../models/Game')
 const Nebulas = require('nebulas')
 const axios = require('axios')
 
-const MASTER_ADDRESS = "n1ViirLQuno8zvx8KEf8B3RuXAfvKThY3yP"
+const MASTER_ADDRESS = require('../config/net').MASTER_ADDRESS
 const SMART_CONTRACT_ADDR = require('../config/net').SMART_CONSTRACT_ADDR
-const NET_URL = require('../config/net').NET_URL
 
+const neb = require('./neb').neb
+const api = require('./neb').api;
+const admin = require('./neb').admin;
+const Transaction = require('./neb').Transaction;
+const MASTER_ACC = require('./neb').MASTER_ACC;
 
-axios.interceptors.request.use(function (config) {
-    // Do something before request is sent
-    // console.log({config: config.data})
-    return config;
-  }, function (error) {
-    // Do something with request error
-    return Promise.reject(error);
-  });
+module.exports.getHistory = ({game_id}, callback) => {
+	api.call({
+	   chainID: 1001,
+	   from: MASTER_ADDRESS,
+	   to: SMART_CONTRACT_ADDR,
+	   value: "0",
+	   nonce: "0",
+	   gasPrice: 1000000,
+	   gasLimit: 2000000,
+	   contract: {
+	       function: "getGameResultByGameId",
+	       args: JSON.stringify([game_id])
+	   }
+	}).then(function(tx) {
+		console.log({tx})
+		let result 
+		try {
+			result = JSON.parse(JSON.parse(tx.result))
+		} catch (e) {
+			console.log('Error when decode JSON', {tx}, {e})
+			return callback(e)
+		}
 
-// Add a response interceptor
-axios.interceptors.response.use(function (response) {
-    // Do something with response data
-    // console.log({response})
+		const prizes = new Map
+		
+		// Seed the prizes
+		result.prizeStructure
+			.sort((a, b) => a.prizePercentage > b.prizePercentage)
+			.forEach(prize => {
+				prizes.set(prize.prize.prizeId, {
+					prizeName: prize.prize.prizeName,
+					prizePercentage: prize.prizePercentage,
+					prizeNumberOf: prize.prizeNumberOf,
+					prizeRemain: prize.prizeRemain,
+					players: []
+				})
+			})
 
-    return response;
-  }, function (error) {
-    // Do something with response error
-    return Promise.reject(error);
-  });
+		result.winners.forEach(winner => {
+			let currentPrize = prizes.get(winner.prize.prizeId)
+			currentPrize.players.push({
+				playerId: winner.player.playerId,
+				playerName: winner.player.playerName,
+				playerAddress: winner.player.playerAddress,
+			})
+			prizes.set(winner.prize.prizeId, currentPrize)
+		})
 
-const neb = new Nebulas.Neb()
+		console.log({prizes})
 
-neb.setRequest(new Nebulas.HttpRequest(NET_URL));
-
-const admin = neb.admin;
-
-const MASTER_ACC = new Nebulas.Account
-const v4 = '{"version":4,"id":"15a6fcde-4962-4722-8c56-c42df6c28e80","address":"n1ViirLQuno8zvx8KEf8B3RuXAfvKThY3yP","crypto":{"ciphertext":"3ceb39f15a0f515a1e1844c46468db1f98e1a6d5c9a1a0d71422ea5a0e856787","cipherparams":{"iv":"eca8941b1f4c69c31acbcc0d2c806705"},"cipher":"aes-128-ctr","kdf":"scrypt","kdfparams":{"dklen":32,"salt":"ed71f4ede744a0dd17dde1a239a3c7c4af9d2e46bd68075a477ab1e21496b6f7","n":4096,"r":8,"p":1},"mac":"51226ecb5a80752cee0dd7bc370de2835ae88c97a24e155f0666a232aa3f9108","machash":"sha3256"}}'
-MASTER_ACC.fromKey(v4, "123456789", true)
+	    return callback(null, Array.from(prizes.values()))
+	}).catch(e => {
+		return callback(e)
+	});
+}
 
 module.exports.addNewPlayerToGame = ({
     game_id,
@@ -92,7 +122,7 @@ module.exports.addNewPlayerToGame = ({
 				    }
 				    console.log({txData})
 
-				    var tx = new Nebulas.Transaction(txData);
+				    var tx = new Transaction(txData);
 				    tx.signTransaction();
 
 				    neb.api.sendRawTransaction({
@@ -146,7 +176,7 @@ module.exports.addNewGameToBusiness = ({
 			    }
 			    console.log({txData})
 
-			    var tx = new Nebulas.Transaction(txData);
+			    var tx = new Transaction(txData);
 			    tx.signTransaction();
 
 			    neb.api.sendRawTransaction({
@@ -176,34 +206,3 @@ module.exports.addNewGameToBusiness = ({
 	}
 }
 
-const waitForTxSuccess = (tx, callback) => {
-	const maxTries = 30
-	var currentTry = 0
-	const api = neb.api;
-	var interval
-	try {
-		interval = setInterval(() => {
-			api.getTransactionReceipt({hash: tx})
-			.then(function(receipt) {
-				console.log({receipt})
-				console.log("Wait Tx. Try " + currentTry)
-				if (++currentTry > maxTries) {
-					clearInterval(interval)
-					return callback('Waiting for Tx success timeout of ' + maxTries+ ' tries')
-				}
-				if (receipt.status !== 2) {
-					clearInterval(interval)
-					if (receipt.status === 0) {
-						return callback(receipt.execute_error)
-					} else {
-						return callback(null, receipt.execute_result)
-					}
-				}
-			}).catch(err => {
-				console.log('Nebulas net error', { err })
-			})
-		}, 1500)
-	} catch(err) {
-		console.log('Nebulas net error', { err })
-	}
-}

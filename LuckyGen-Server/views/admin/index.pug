@@ -1,0 +1,109 @@
+extends ../layout
+
+block styles
+  style.
+    .btn-copy{
+      float: right;
+    }
+
+block content
+  .pb-2.mt-2.mb-4.border-bottom
+    h3 Manage enterprises
+
+  .pt-3
+      table
+        thead
+          tr
+            th(style='width: 15%;')
+              | ID
+            th(style='width: 25%;')
+              | Business email
+            th(style='width: 20%;')
+              | Wallets
+            th(style='width: 20%;')
+              | Total games
+            th(style='width: 20%;')
+              | Actions
+        tbody
+          each user, index in users
+            tr
+              td=user._id
+              td=user.email
+              td
+                each wallet in user.wallets
+                  p=wallet.getAddress()
+                  p.placeholder-wallet(data-wallet=wallet.getAddress())="loading"
+              td=user.games.length
+              td
+                .btn-group(role='group')
+                  if user.wallets.length > 0
+                    button.btn.btn-primary.btn-open-topup(type='button', data-toggle="modal", data-target=".top-up-modal", data-wallet=user.wallets[0].getAddress()) Top up
+                  button.btn.btn-info(type='button') Edit
+                  button.btn.btn-danger(type='button') Delete
+
+      .modal.fade.top-up-modal(tabindex='-1' role='dialog')
+        form#top-up-form(action="/admin/send-money", method="POST")
+          .modal-dialog(role='document')
+            .modal-content
+              .modal-header
+                h5.modal-title Top up to Enterpise Wallet
+                button.close(type='button' data-dismiss='modal' aria-label='Close')
+                  span(aria-hidden='true') &times;
+              .modal-body
+                  input(type='hidden', name='_csrf', value=_csrf)
+                  .form-group.row
+                    label.col-md-3.col-form-label.font-weight-bold.text-right(for='wallet') Wallet address
+                    .col-md-7
+                      input.form-control(type='text', name='wallet_address', id='selected-wallet', autofocus, required)
+                  .form-group.row
+                    label.col-md-3.col-form-label.font-weight-bold.text-right(for='amount') Amount
+                    .col-md-7
+                      input.form-control(type='number', value='0.000001', name='amount', id='selected-amount', step="any", required)
+              .modal-footer
+                button.btn.btn-primary#btn-submit-topup(type='submit') Top up!
+                button.btn.btn-secondary(type='button' data-dismiss='modal') Close
+
+block scripts
+  script.
+    $(document).ready(function(){
+      $(".btn-open-topup").click(function() {
+        $("#selected-wallet").val($(this).data('wallet'))
+      })
+
+      $(".placeholder-wallet").each(function(){
+        $.post({
+            contentType: 'application/json',
+            url: 'https://testnet.nebulas.io/v1/user/accountstate',
+            data: JSON.stringify({
+              address: $(this).data('wallet'),
+              height: 0,
+            }),
+            success: data => {
+              $(this).text(`${data.result.balance / 1000000000000000000} NAS`)
+            },
+        })
+      })
+
+      $("#top-up-form").on('submit', function(event) {
+        event.preventDefault()
+        $("#btn-submit-topup").html('<i class="fa fa-spin fa-spinner"></i> Sending. Please wait...').addClass('btn-default')
+        $.post({
+            url: '/admin/send-money',
+            data: $(this).serialize(),
+            success: function(data) {
+              alert('Send money done!')
+              console.log({data})
+            },
+            error: function(error) {
+              showError('Something when wrong send money to this wallet!')
+            },
+            complete: function() {
+              $("#btn-submit-topup").text('Top up!').removeClass('btn-default')
+            }
+        })
+      })
+    })
+    
+
+
+  

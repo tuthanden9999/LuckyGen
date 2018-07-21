@@ -38,6 +38,7 @@ const apiController = require('./controllers/api');
 const contactController = require('./controllers/contact');
 const gameController = require('./controllers/game');
 const tokenController = require('./controllers/token');
+const adminController = require('./controllers/admin');
 
 /**
  * API keys and Passport configuration.
@@ -128,8 +129,11 @@ app.use('/webfonts', express.static(path.join(__dirname, 'node_modules/@fortawes
  */
 app.get('/games/create', passportConfig.isAuthenticated, gameController.create);
 app.post('/api/games/:id/players', passport.authenticate('jwt'), passportConfig.isAuthenticated, gameController.storeNewPlayer);
+app.get('/api/games/:id/result', gameController.getResult);
 app.get('/games/:id/preview', gameController.preview);
 app.get('/games', passportConfig.isAuthenticated, gameController.index);
+app.get('/admin', passportConfig.isAuthenticated, adminController.index);
+app.post('/admin/send-money', passportConfig.isAuthenticated, adminController.doSendMoney);
 app.post('/games', passportConfig.isAuthenticated, gameController.store);
 app.post('/tokens', passportConfig.isAuthenticated, tokenController.store);
 
