@@ -109,6 +109,7 @@ class Player {
     playerName: string;
     playerAddress: string;
     pickedNumbers: number[];
+    playTimestamp: number;
     public constructor(text ? : string) {
         if(text) {
             let playerObj = JSON.parse(text);
@@ -116,11 +117,13 @@ class Player {
             this.playerName = playerObj.playerName;
             this.playerAddress = playerObj.playerAddress;
             this.pickedNumbers = [];
+            this.playTimestamp = 0;
         } else {
             this.playerId = "0";
             this.playerName = "";
             this.playerAddress = "";
             this.pickedNumbers = [];
+            this.playTimestamp = 0;
         }
     }
 }
@@ -186,14 +189,17 @@ class BLuckyPickNumber {
         if(tmpPlayerIndex === -1) {
             throw new Error(ErrorMessages.PLAYER_INVALID);
         } else {
-            currentGame.playerList[tmpPlayerIndex].pickedNumbers = pickedNumbers;
-            var tmpPlayer = currentGame.playerList[tmpPlayerIndex];
-            for(var i = 0; i < tmpPlayer.pickedNumbers.length; i++) {
-                var tmpPickedNumber = tmpPlayer.pickedNumbers[i];
-                if(currentGame.allPickedNumbers.includes(tmpPickedNumber)) {
-                    continue;
-                } else {
-                    currentGame.allPickedNumbers.push(tmpPickedNumber);
+            if(currentGame.playerList[tmpPlayerIndex].playTimestamp === 0) {
+                currentGame.playerList[tmpPlayerIndex].pickedNumbers = pickedNumbers;
+                currentGame.playerList[tmpPlayerIndex].playTimestamp = Date.now();
+                var tmpPlayer = currentGame.playerList[tmpPlayerIndex];
+                for(var i = 0; i < tmpPlayer.pickedNumbers.length; i++) {
+                    var tmpPickedNumber = tmpPlayer.pickedNumbers[i];
+                    if(currentGame.allPickedNumbers.includes(tmpPickedNumber)) {
+                        continue;
+                    } else {
+                        currentGame.allPickedNumbers.push(tmpPickedNumber);
+                    }
                 }
             }
         }
