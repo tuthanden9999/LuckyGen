@@ -8,7 +8,9 @@ block content
     li.nav-item
       a#home-tab.nav-link.active(data-toggle='tab' href='#game1' role='tab' aria-controls='home' aria-selected='true') Lucky Spin Game
     li.nav-item
-      a#profile-tab.nav-link(data-toggle='tab' href='#game2' role='tab' aria-controls='profile' aria-selected='false') Lucky Number Game
+      a#profile-tab.nav-link(data-toggle='tab' href='#game2' role='tab' aria-controls='profile' aria-selected='false') Lucky Counter Game
+    li.nav-item
+      a#counter-tab.nav-link(data-toggle='tab' href='#game3' role='tab' aria-controls='profile' aria-selected='false') Lucky Number Game
 
   #myTabContent.tab-content.pt-3
     #game1.tab-pane.fade.show.active(role='tabpanel' aria-labelledby='home-tab')
@@ -41,27 +43,15 @@ block content
                 button.btn.btn-primary(type='submit')
                   i.far.fa-envelope.fa-sm
                   | Create game
-    #game2.tab-pane.fade(role='tabpanel' aria-labelledby='profile-tab')
-      form(method='POST')
-        input(type='hidden', name='_csrf', value=_csrf)
-        if (unknownUser)
-          .form-group.row
-            label(class='col-md-2 col-form-label font-weight-bold', for='name') Name
-            .col-md-8
-              input.form-control(type='text', name='name', id='name', autofocus=true)
-          .form-group.row
-            label(class='col-md-2 col-form-label font-weight-bold', for='email') Email
-            .col-md-8
-              input.form-control(type='text', name='email', id='email')
-        .form-group.row
-          label(class='col-md-2 col-form-label font-weight-bold', for='message') Please describe the issue or your suggestion
-          .col-md-8
-            textarea.form-control(name='message', id='message', rows='7', autofocus=(!unknownUser).toString())
-        .form-group
-          .offset-md-2.col-md-8.p-1
-            button.btn.btn-primary(type='submit')
-              i.far.fa-envelope.fa-sm
-              | Send
+
+    #game2.tab-pane.fade(role='tabpanel' aria-labelledby='home-tab')
+      .row
+        .col-md-8.offset-md-2 Comming soon
+
+    #game3.tab-pane.fade(role='tabpanel' aria-labelledby='profile-tab')
+      .row
+        .col-md-8.offset-md-2 Comming soon
+          
 block scripts
   script.
     $('#btn-add-prize').click(function(){
