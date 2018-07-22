@@ -40,13 +40,13 @@ module.exports.newAccount = (callback) => {
     })
 }
 
-module.exports.topUpWallet = ({address, amount}, callback) => {
+module.exports.topUpWallet = ({address, amount, fromAccount, fromAddress}, callback) => {
     try {
         neb.api.getNebState().then((nebstate) => {
-            neb.api.getAccountState(MASTER_ADDRESS).then((accstate) => {
+            neb.api.getAccountState(fromAddress).then((accstate) => {
                 const txData = {
                     chainID: nebstate.chain_id,
-                    from: MASTER_ACC,
+                    from: fromAccount,
                     to: address,
                     value: amount * 1000000000000000000, // Convert to Wei
                     nonce: parseInt(accstate.nonce) + 1,

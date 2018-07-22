@@ -13,10 +13,10 @@ const html = `
             <tr>
                 <div class="lgx-subscribe-form">
                     <div class="form-group form-group-email">
-                        <input type="text" name="fname" id="address" placeholder="Your nebulas address" class="form-control lgx-input-form form-control">
+                        <input type="text" name="fname" id="player-address" placeholder="Your nebulas address" class="form-control lgx-input-form form-control">
                     </div>
                     <div class="form-group form-group-submit">
-                        <button type="button" onclick="submit();" name="lgx-submit" id="submit" class="lgx-btn lgx-submit"><span>Submit</span></button>
+                        <button type="button" onclick="submitNewPlayer();" name="lgx-submit" id="submit" class="lgx-btn lgx-submit"><span>Submit</span></button>
                     </div>
                 </div>
             </tr>
@@ -197,18 +197,24 @@ function randColor() {
     return color;
 }
 
-function submit() {
-    //alert($("#address").val());           
-    $.post("addressurl.html", {
-        address: document.getElementById('address').value
+function submitNewPlayer() {
+    $.post(wheelGame.submitUrl, {
+        player_address: document.getElementById('player-address').value,
+        game_id: wheelGame.gameId,
+        player_id: wheelGame.playerId
     }, function(data, status) {
-        alert("Data: " + data + "\nStatus: " + status);
+        alert('Success')
+        getPlayerById(wheelGame.playerId)
     });
 }
 
 var intervalQuery
 
 function playSpin() {
+    if ($("#player-address").val() == '') {
+        alert('Please enter nebulas address then submit before play the game!')
+        return
+    }
     var options = {
         callback: CALLBACK_URL
     }
@@ -258,8 +264,8 @@ function getPlayerById(playerId) {
     }
     return neb.api.call(HOST_ADDR, window.wheelGame.contractAddress, "0", "0", GAS_PRICE, GAS_LIMIT, contract).then(function(res) {
         result = JSON.parse(JSON.parse(res.result));
-        document.getElementById('address').value = result.playerAddress;
-        document.getElementById('address').disabled = true;
+        document.getElementById('player-address').value = result.playerAddress;
+        document.getElementById('player-address').disabled = true;
         document.getElementById('submit').disabled = true;
         if (result.spinNumberOf != "0") {
             document.getElementById('spin_button').src = "https://raw.githubusercontent.com/tuthanden9999/LuckyGen/master/LuckyGen/LuckySpin/image/spin_on.png";

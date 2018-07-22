@@ -41,7 +41,7 @@ class Client {
 		}).then(data => data.data)
 	}
 
-/**
+	/**
 	 * @param {number} Game's ID
 	 * @param {string} Player's ID
 	 * @param {number = 1} Turns

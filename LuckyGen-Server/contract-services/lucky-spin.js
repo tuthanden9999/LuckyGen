@@ -12,6 +12,7 @@ const api = require('./neb').api;
 const admin = require('./neb').admin;
 const Transaction = require('./neb').Transaction;
 const MASTER_ACC = require('./neb').MASTER_ACC;
+const waitForTxSuccess = require('./neb').waitForTxSuccess;
 
 module.exports.getHistory = ({game_id}, callback) => {
 	api.call({

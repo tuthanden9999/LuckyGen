@@ -9,15 +9,16 @@ router.get('/', function(req, res, next) {
 	res.render('index', { title: 'Client Demo' });
 });
 
-router.post('/', function(req, res, next) {
+router.post('/api/add-player', function(req, res, next) {
 	const client = new SDK(null , KEY)
-	const {game_id, player_id, player_address, player_name, turns} = req.body
+	const randomUserName = 'User #' + Math.floor(Math.random()*10)
+	const {game_id, player_id, player_address, player_name = randomUserName, turns = 1} = req.body
 
 	client.addNewPlayer(game_id, player_id, player_name, player_address, turns).then(result => {
-		res.send('ok');		
+		return res.send('ok');		
 	}).catch(e => {
 		console.log({e})
-		res.send('error')
+		return res.status(500).send(e)
 	})
 });
 

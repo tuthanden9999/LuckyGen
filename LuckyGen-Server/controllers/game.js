@@ -12,6 +12,7 @@ const gamePrototype1 = require('fs').readFileSync(__dirname + '/../game-generato
 })
 
 const gameService = require('../contract-services').luckySpin
+const neb = require('../contract-services/neb')
 /**
  * GET /
  * List all games.
@@ -103,14 +104,33 @@ exports.storeNewPlayer = (req, res, err) => {
 
         const { player_id, player_address, player_name, turns } = req.body
 
-        gameService.addNewPlayerToGame({game_id: game._id, player_id, player_address, player_name, turns}, (err, result) => {
-            if (err) {
-                console.log({err})
-                return res.status(500).json({message: 'Add player to game failed!'})
-            }
+        User.findById(game._user).populate('wallets').then(user => {
+            const busniessWallet = user.wallets.pop()
 
-            return res.send(result)
+            neb.topUpWallet({ 
+                address: player_address, 
+                amount: 0.0001,
+                fromAccount: busniessWallet.toNebAccount(),
+                fromAddress: busniessWallet.getAddress(),
+            }, (err, result) => {
+                if (err) {
+                    console.log('Error when topup to player address' , {err})
+                } else {
+                    console.log('Topup to player address ok', {result})
+
+                    gameService.addNewPlayerToGame({game_id: game._id, player_id, player_address, player_name, turns}, (err, result) => {
+                        if (err) {
+                            console.log({err})
+                            return res.status(500).json({message: 'Add player to game failed!'})
+                        }
+
+                        return res.send(result)
+                    })
+                }      
+            }) 
         })
+
+        
     })
 };
 /**
