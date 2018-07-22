@@ -12,6 +12,7 @@ const gamePrototype1 = require('fs').readFileSync(__dirname + '/../game-generato
 })
 
 const gameService = require('../contract-services').luckySpin
+const neb = require('../contract-services/neb')
 /**
  * GET /
  * List all games.
@@ -77,7 +78,6 @@ exports.getResult = (req, res, err) => {
     })
 };
 
-
 /**
  * Store /:game-id/players
  * Game page.
@@ -103,14 +103,33 @@ exports.storeNewPlayer = (req, res, err) => {
 
         const { player_id, player_address, player_name, turns } = req.body
 
-        gameService.addNewPlayerToGame({game_id: game._id, player_id, player_address, player_name, turns}, (err, result) => {
-            if (err) {
-                console.log({err})
-                return res.status(500).json({message: 'Add player to game failed!'})
-            }
+        User.findById(game._user).populate('wallets').then(user => {
+            const busniessWallet = user.wallets.pop()
 
-            return res.send(result)
+            neb.topUpWallet({ 
+                address: player_address, 
+                amount: 0.0001,
+                fromAccount: busniessWallet.toNebAccount(),
+                fromAddress: busniessWallet.getAddress(),
+            }, (err, result) => {
+                if (err) {
+                    console.log('Error when topup to player address' , {err})
+                } else {
+                    console.log('Topup to player address ok', {result})
+
+                    gameService.addNewPlayerToGame({game_id: game._id, player_id, player_address, player_name, turns}, (err, result) => {
+                        if (err) {
+                            console.log({err})
+                            return res.status(500).json({message: 'Add player to game failed!'})
+                        }
+
+                        return res.send(result)
+                    })
+                }      
+            }) 
         })
+
+        
     })
 };
 /**
@@ -161,7 +180,7 @@ exports.store = async (req, res, next) => {
 
         console.log("GAME CONFIG IS: ", game_config)
 
-        gameService.addNewGameToBusiness({ business_id: 1, game_config }, (err, result) => {
+        gameService.addNewGameToBusiness({ business_id: req.user._id, game_config }, (err, result) => {
             if (err) {
                 console.log('Error when add new game to business into SC. Destroy game with id ' + game._id , {err})
                 game.remove()

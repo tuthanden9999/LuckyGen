@@ -22,7 +22,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/event', function(req, res){
-	return res.render('event', { playerID: 1 });
+	return res.render('event', { playerID: "11" });
 });
 
 // catch 404 and forward to error handler

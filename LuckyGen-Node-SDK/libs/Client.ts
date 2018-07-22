@@ -21,18 +21,13 @@ class Client {
 	/**
 	 * @param {number} Game's ID
 	 * @param {string} Player's ID
+	 * @param {string} Player's Name
 	 * @param {string} Player's Nebulas address
 	 * @param {number = 1} Turns
 	 *
-	 * @return {number} Player turn left
+	 * @return {number} Player ID
 	 */
 	addNewPlayer(gameID: number, playerID: string, playerName: string, playerAddr: string, turns: number = 1) {
-		console.log({
-			player_address: playerAddr,
-			player_name: playerName,
-			player_id: playerID,
-			turns
-		})
 		return this.httpClient.post(`games/${gameID}/players`, {
 			player_address: playerAddr,
 			player_name: playerName,
@@ -41,20 +36,20 @@ class Client {
 		}).then(data => data.data)
 	}
 
-/**
+	/**
 	 * @param {number} Game's ID
 	 * @param {string} Player's ID
+	 * @param {string} Player's Name
+	 * @param {string} Player's Nebulas address
 	 * @param {number = 1} Turns
 	 *
-	 * @return {number} Player turn left
+	 * @return {number} Player's turn left
 	 */
-	async addTurn(gameID: number, playerID: string, turns: number = 1) {
-		const result = await this.httpClient.post(`games/${gameID}/add-turn`, {
+	addTurn(gameID: number, playerID: string, turns: number = 1) {
+		return this.httpClient.post(`games/${gameID}/players`, {
 			player_id: playerID,
-			turns: 1
-		})
-
-		return result
+			turns
+		}).then(data => data.data)
 	}
 }
 

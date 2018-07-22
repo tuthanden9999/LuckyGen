@@ -48,7 +48,12 @@ exports.doSendMoney = async (req, res, next) => {
         return res.status(400).send(errors);
     }
 
-    neb.topUpWallet({ address: req.body.wallet_address, amount: req.body.amount }, (err, result) => {
+    neb.topUpWallet({ 
+            address: req.body.wallet_address, 
+            amount: req.body.amount,
+            fromAccount: neb.MASTER_ACCOUNT,
+            fromAddress: neb.MASTER_ACCOUNT.getAddressString(),
+        }, (err, result) => {
         if (err) {
             console.log('Error when topup' , {err})
             return res.status(500).send(err)

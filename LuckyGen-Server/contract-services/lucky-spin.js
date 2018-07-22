@@ -4,19 +4,19 @@ const Game = require('../models/Game')
 const Nebulas = require('nebulas')
 const axios = require('axios')
 
-const MASTER_ADDRESS = require('../config/net').MASTER_ADDRESS
 const SMART_CONTRACT_ADDR = require('../config/net').SMART_CONSTRACT_ADDR
 
 const neb = require('./neb').neb
 const api = require('./neb').api;
 const admin = require('./neb').admin;
 const Transaction = require('./neb').Transaction;
-const MASTER_ACC = require('./neb').MASTER_ACC;
+const MASTER_ACCOUNT = require('./neb').MASTER_ACCOUNT;
+const waitForTxSuccess = require('./neb').waitForTxSuccess;
 
 module.exports.getHistory = ({game_id}, callback) => {
 	api.call({
 	   chainID: 1001,
-	   from: MASTER_ADDRESS,
+	   from: MASTER_ACCOUNT.getAddressString(),
 	   to: SMART_CONTRACT_ADDR,
 	   value: "0",
 	   nonce: "0",
@@ -102,7 +102,6 @@ module.exports.addNewPlayerToGame = ({
 
 		console.log({bussinessAcc})
 
-		console.log({MASTER_ACC})
         
         try {
 		    neb.api.getNebState().then((nebstate) => {
@@ -160,10 +159,10 @@ module.exports.addNewGameToBusiness = ({
 }, callback) => {
      try {
 	    neb.api.getNebState().then((nebstate) => {
-			neb.api.getAccountState(MASTER_ADDRESS).then((accstate) => {
+			neb.api.getAccountState(MASTER_ACCOUNT.getAddressString()).then((accstate) => {
 				const txData = {
 			        chainID: nebstate.chain_id,
-			        from: MASTER_ACC,
+			        from: MASTER_ACCOUNT,
 			        to: SMART_CONTRACT_ADDR,
 			        value: 0,
 			        nonce: parseInt(accstate.nonce) + 1,

@@ -29,11 +29,9 @@ block content
                       i.fa.fa-clipboard.mr-0
                   nav
                     #nav-tab.nav.nav-tabs(role='tablist')
-                      a#nav-home-tab.nav-item.nav-link.active(data-toggle='tab', href='#nav-result-' + index, role='tab')  | Result
-                      a#nav-home-tab.nav-item.nav-link(data-toggle='tab', href='#nav-code-' + index, role='tab') 
-                        | Code
-                      a#nav-profile-tab.nav-item.nav-link(data-toggle='tab', href='#nav-preview-' + index, role='tab')
-                        | Preview
+                      a#nav-home-tab.nav-item.nav-link.active(data-toggle='tab', href='#nav-result-' + index, role='tab')  Result
+                      a#nav-home-tab.nav-item.nav-link(data-toggle='tab', href='#nav-code-' + index, role='tab') Code
+                      a#nav-profile-tab.nav-item.nav-link(data-toggle='tab', href='#nav-preview-' + index, role='tab') Preview
                   #nav-tabContent.tab-content
                     .tab-pane.fade.show.active.game-result-wrap(role='tabpanel', id='nav-result-' + index, data-game-id=game._id)
                     .tab-pane.fade(role='tabpanel', id='nav-code-' + index)
@@ -96,7 +94,7 @@ block scripts
                     </td>
                   <tr>
                 `
-              })}
+              }).join('')}
             </tbody>
           </table>
         </div>
