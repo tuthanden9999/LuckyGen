@@ -7,7 +7,7 @@ const html = `
         display: none;
         justify-content: center;
         align-items: center;
-        font-size: 25px;">Waiting for result...</div>
+        font-size: 25px;"></div>
     <table id="lucky-spin-main" border="0" cellpadding="0" cellspacing="0" style="display: none">
         <tbody>
             <tr>
@@ -31,11 +31,11 @@ const html = `
                                     <a id="number">
                                         ...
                                     </a>
-                                    <!-- <br>
+                                    <br>
                                         <a align="center" href="#" onclick="resetWheel(); return false;">
                                             Reset
                                         </a>
-                                    </br> -->
+                                    </br>
                                 </br>
                             </br>
                         </img>
@@ -189,22 +189,21 @@ function getGameInfo(gameId) {
 }
 
 function randColor() {
-    var letters = '0123456789ABCDEF';
-    var color = '#';
-    for (var i = 0; i < 6; i++) {
-        color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color;
+    const colors = ["#f03434", "#EC644B", "#D24D57", "#F22613", "#D91E18", "#96281B", "#EF4836", "#D64541", "#C0392B", "#CF000F", "#E74C3C", "#DB0A5B", "#F64747", "#F1A9A0", "#D2527F", "#E08283", "#F62459", "#E26A6A", "#947CB0", "#DCC6E0", "#663399", "#674172", "#AEA8D3", "#913D88", "#9A12B3", "#BF55EC", "#BE90D4", "#8E44AD", "#9B59B6", "#013243", "#446CB3", "#E4F1FE", "#4183D7", "#59ABE3", "#81CFE0", "#52B3D9", "#C5EFF7", "#22A7F0", "#3498DB", "#2C3E50", "#19B5FE", "#336E7B", "#22313F", "#6BB9F0", "#1E8BC3", "#3A539B", "#34495E", "#67809F", "#2574A9", "#1F3A93", "#89C4F4", "#4B77BE", "#5C97BF", "#00e640", "#91b496", "#4ECDC4", "#A2DED0", "#87D37C", "#90C695", "#03C9A9", "#68C3A3", "#65C6BB", "#1BBC9B", "#1BA39C", "#66CC99", "#36D7B7", "#C8F7C5", "#86E2D5", "#2ECC71", "#16a085", "#3FC380", "#019875", "#03A678", "#4DAF7C", "#2ABB9B", "#00B16A", "#1E824C", "#049372", "#26C281", "#F5D76E", "#F7CA18", "#F4D03F", "#fabe58", "##e9d460", "#FDE3A7", "#F89406", "#EB9532", "#E87E04", "#F4B350", "#F2784B", "#EB974E", "#F5AB35", "#D35400", "#F39C12", "#F9690E", "#F9BF3B", "#F27935", "#E67E22", "#ececec", "#6C7A89", "#D2D7D3", "#EEEEEE", "#BDC3C7", "#ECF0F1", "#95A5A6", "#DADFE1", "#ABB7B7", "#F2F1EF", "#BFBFBF"]
+    return colors[Math.floor(Math.random()*colors.length)]
 }
 
 function submitNewPlayer() {
+    showOverlay('<i class="fa fa-spin fa-spinner"></i>We are create your new play account. Please wait...')
     $.post(wheelGame.submitUrl, {
         player_address: document.getElementById('player-address').value,
         game_id: wheelGame.gameId,
         player_id: wheelGame.playerId
     }, function(data, status) {
-        alert('Success')
         getPlayerById(wheelGame.playerId)
+        setTimeout(() => {
+            hideOverlay()
+        }, 500)
     });
 }
 
@@ -222,8 +221,7 @@ function playSpin() {
     var callArgs = JSON.stringify([window.wheelGame.gameId, window.wheelGame.playerId]);
     const serialNumber = nebPay.call(window.wheelGame.contractAddress, "0", callFunction, callArgs, options);
 
-    $("#lucky-spin-overlay").css('display', 'flex')
-    $("#lucky-spin-main").css('opacity', '0.3')
+    showOverlay('<i class="fa fa-spin fa-spinner"></i> Waiting for result...')
 
     intervalQuery = setInterval(() => {
         funcIntervalQuery(serialNumber);
@@ -238,8 +236,7 @@ function funcIntervalQuery(serialNumber) {
         var respObject = JSON.parse(resp)
         console.log({respObject})
         if (respObject.data.status === 1) {
-            $("#lucky-spin-overlay").css('display', 'none')
-            $("#lucky-spin-main").css('opacity', '1')
+            hideOverlay()
 
             var result = JSON.parse(respObject.data.execute_result)
             if (result == "-1") {
@@ -283,12 +280,12 @@ function startSpin(prize) {
     var stopAt = ((360 / wheelGame.theWheel.numSegments) * (prize - 1)) + 1 + Math.floor((Math.random() * ((360 / wheelGame.theWheel.numSegments) - 2)));
     console.log({stopAt})
     wheelGame.theWheel.animation.stopAngle = stopAt;
-    // if (wheelSpinning == false) {
+    if (wheelSpinning == false) {
         document.getElementById('spin_button').src = "https://rawgit.com/tuthanden9999/LuckyGen/master/LuckyGen/LuckySpin/image/spin_off.png";
         document.getElementById('spin_button').className = "";
         wheelGame.theWheel.startAnimation();
         wheelSpinning = true;
-    // }
+    }
 }
 
 function resetWheel() {
@@ -306,4 +303,16 @@ function alertPrize(indicatedSegment) {
     } else {
         alert("Congratulation! You have won " + indicatedSegment.text);        
     }
+}
+
+function hideOverlay(){
+    $("#lucky-spin-overlay").html('')
+    $("#lucky-spin-overlay").css('display', 'none')
+    $("#lucky-spin-main").css('opacity', '1')   
+}
+
+function showOverlay(msg) {
+    $("#lucky-spin-overlay").html(msg)
+    $("#lucky-spin-overlay").css('display', 'flex')
+    $("#lucky-spin-main").css('opacity', '0.3')
 }

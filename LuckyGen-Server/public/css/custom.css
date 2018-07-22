@@ -10,6 +10,7 @@
 table {
   border-collapse: collapse;
   overflow: hidden;
+  width: 100%;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
   background: linear-gradient(45deg, #49a09d, #5f2c82);
 }

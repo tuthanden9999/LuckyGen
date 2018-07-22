@@ -52,7 +52,7 @@ exports.doSendMoney = async (req, res, next) => {
             address: req.body.wallet_address, 
             amount: req.body.amount,
             fromAccount: neb.MASTER_ACCOUNT,
-            fromAddress: neb.MASTER_ADDRESS,
+            fromAddress: neb.MASTER_ACCOUNT.getAddressString(),
         }, (err, result) => {
         if (err) {
             console.log('Error when topup' , {err})

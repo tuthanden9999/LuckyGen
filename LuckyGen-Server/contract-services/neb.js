@@ -13,15 +13,15 @@ const api = neb.api
 
 neb.setRequest(new Nebulas.HttpRequest(NET_URL))
 
-const MASTER_ACC = new Nebulas.Account
+const MASTER_ACCOUNT = new Nebulas.Account
 const v4String = '{"version":4,"id":"15a6fcde-4962-4722-8c56-c42df6c28e80","address":"n1ViirLQuno8zvx8KEf8B3RuXAfvKThY3yP","crypto":{"ciphertext":"3ceb39f15a0f515a1e1844c46468db1f98e1a6d5c9a1a0d71422ea5a0e856787","cipherparams":{"iv":"eca8941b1f4c69c31acbcc0d2c806705"},"cipher":"aes-128-ctr","kdf":"scrypt","kdfparams":{"dklen":32,"salt":"ed71f4ede744a0dd17dde1a239a3c7c4af9d2e46bd68075a477ab1e21496b6f7","n":4096,"r":8,"p":1},"mac":"51226ecb5a80752cee0dd7bc370de2835ae88c97a24e155f0666a232aa3f9108","machash":"sha3256"}}'
-MASTER_ACC.fromKey(v4String, "123456789", true)
+MASTER_ACCOUNT.fromKey(v4String, "123456789", true)
 
 module.exports.neb = neb
 module.exports.admin = neb
 module.exports.Account = Account
 module.exports.api = api
-module.exports.MASTER_ACC = MASTER_ACC
+module.exports.MASTER_ACCOUNT = MASTER_ACCOUNT
 module.exports.Transaction = Nebulas.Transaction
 
 module.exports.newAccount = (callback) => {

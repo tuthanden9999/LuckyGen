@@ -78,7 +78,6 @@ exports.getResult = (req, res, err) => {
     })
 };
 
-
 /**
  * Store /:game-id/players
  * Game page.
@@ -181,7 +180,7 @@ exports.store = async (req, res, next) => {
 
         console.log("GAME CONFIG IS: ", game_config)
 
-        gameService.addNewGameToBusiness({ business_id: 1, game_config }, (err, result) => {
+        gameService.addNewGameToBusiness({ business_id: req.user._id, game_config }, (err, result) => {
             if (err) {
                 console.log('Error when add new game to business into SC. Destroy game with id ' + game._id , {err})
                 game.remove()
