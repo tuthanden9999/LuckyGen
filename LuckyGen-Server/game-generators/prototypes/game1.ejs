@@ -4,8 +4,8 @@
 <script>
 	initSpin({
 		game_id: <%= GAME_ID %>,
-		player_id: 1,
-		submit_url: 'https://my-submit-url',
+		player_id: PLAYER_ID, // Inject your player ID here
+		submit_url: '/api/add-player', // Inject your submit URL
 		contract_address: '<%= SMART_CONSTRACT_ADDR %>'
 	})
 </script>
