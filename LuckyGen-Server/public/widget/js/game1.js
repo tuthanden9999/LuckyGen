@@ -194,7 +194,7 @@ function randColor() {
 }
 
 function submitNewPlayer() {
-    showOverlay('<i class="fa fa-spin fa-spinner"></i>We are create your new play account. Please wait...')
+    showOverlay('<i class="fa fa-spin fa-spinner"></i>We are create your new play account. <br>Please wait about 30s...')
     $.post(wheelGame.submitUrl, {
         player_address: document.getElementById('player-address').value,
         game_id: wheelGame.gameId,
@@ -221,7 +221,7 @@ function playSpin() {
     var callArgs = JSON.stringify([window.wheelGame.gameId, window.wheelGame.playerId]);
     const serialNumber = nebPay.call(window.wheelGame.contractAddress, "0", callFunction, callArgs, options);
 
-    showOverlay('<i class="fa fa-spin fa-spinner"></i> Waiting for result...')
+    showOverlay('<i class="fa fa-spin fa-spinner"></i> Waiting the result for you. <br />Please wait about 30s...')
 
     intervalQuery = setInterval(() => {
         funcIntervalQuery(serialNumber);
