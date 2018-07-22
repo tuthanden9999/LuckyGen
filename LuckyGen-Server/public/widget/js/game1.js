@@ -31,11 +31,11 @@ const html = `
                                     <a id="number">
                                         ...
                                     </a>
-                                    <br>
+                                    <!-- <br>
                                         <a align="center" href="#" onclick="resetWheel(); return false;">
                                             Reset
                                         </a>
-                                    </br>
+                                    </br> -->
                                 </br>
                             </br>
                         </img>
@@ -277,6 +277,7 @@ function getPlayerById(playerId) {
 var wheelSpinning = false;
 
 function startSpin(prize) {
+    resetWheel()
     var stopAt = ((360 / wheelGame.theWheel.numSegments) * (prize - 1)) + 1 + Math.floor((Math.random() * ((360 / wheelGame.theWheel.numSegments) - 2)));
     console.log({stopAt})
     wheelGame.theWheel.animation.stopAngle = stopAt;
