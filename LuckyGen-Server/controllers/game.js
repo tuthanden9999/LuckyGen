@@ -196,7 +196,7 @@ exports.store = async (req, res, next) => {
             }
 
             const html = ejs.render(gamePrototype1, {
-                ASSET_HOST: 'http://localhost:8080',
+                ASSET_HOST: 'http://52.15.53.10:8080',
                 GAME_ID: gameResult.gameId,
                 SMART_CONSTRACT_ADDR,
             })
