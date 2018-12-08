@@ -13,7 +13,7 @@ const html = `
             <tr>
                 <td>
                     <div class="power_controls">
-                        <img alt="spin" disabled="" id="spin_button" onclick="Play_spin();" src="https://rawgit.com/tuthanden9999/LuckyGen/master/LuckyGen/LuckySpin/image/spin_off.png">
+                        <img alt="spin" disabled="" id="spin_button" onclick="Play_spin();" src="https://cdn.jsdelivr.net/gh/tuthanden9999/LuckyGen/LuckyGen/LuckySpin/image/spin_off.png">
                             <br>
                                 <br>
                                     <!-- <div id="number">so luot quay: </div> -->
@@ -42,7 +42,7 @@ const html = `
 `
 
 const JS_DEPENDENCIES = [
-    "https://rawgit.com/tuthanden9999/LuckyGen/master/LuckyGen/LuckySpin/js/Winwheel.js", 
+    "https://cdn.jsdelivr.net/gh/tuthanden9999/LuckyGen/LuckyGen/LuckySpin/js/Winwheel.js", 
     "http://cdnjs.cloudflare.com/ajax/libs/gsap/latest/TweenMax.min.js", 
     "js/nebPay.js", 
     "js/nebulas.js", 
@@ -256,7 +256,7 @@ function startSpin(prize) {
     var stopAt = ((360 / theWheel.numSegments) * (prize - 1)) + 1 + Math.floor((Math.random() * ((360 / theWheel.numSegments) - 2)));
     theWheel.animation.stopAngle = stopAt;
     if (wheelSpinning == false) {
-        document.getElementById('spin_button').src = "https://rawgit.com/tuthanden9999/LuckyGen/master/LuckyGen/LuckySpin/image/spin_off.png";
+        document.getElementById('spin_button').src = "https://cdn.jsdelivr.net/gh/tuthanden9999/LuckyGen/LuckyGen/LuckySpin/image/spin_off.png";
         document.getElementById('spin_button').className = "";
         theWheel.startAnimation();
         wheelSpinning = true;
